@@ -9,4 +9,15 @@ public class Node {
         this.nodeId = nodeId;
         this.routeTable = new RouteTable(this.nodeId);
     }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "nodeId=" + nodeId +
+                '}';
+    }
 }
