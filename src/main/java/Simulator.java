@@ -9,16 +9,16 @@ import java.util.*;
 public class Simulator {
     // fields
     private final JSONObject config; // configuration (just in case)
-    private final HashMap<Integer, Node> nodes; // list of nodes
+    private final HashMap<Integer, NetworkNode> nodes; // list of nodes
     private final Network network; // network
 
     public Simulator(JSONObject config) {
         // hashmap for the network
-        HashMap<Node, ArrayList<Node>> networkGraph = new HashMap<Node, ArrayList<Node>>();
+        HashMap<NetworkNode, ArrayList<NetworkNode>> networkGraph = new HashMap<NetworkNode, ArrayList<NetworkNode>>();
 
         // instantiate fields
         this.config = config;
-        this.nodes = new HashMap<Integer, Node>();
+        this.nodes = new HashMap<Integer, NetworkNode>();
         this.network = new Network(networkGraph);
 
         // fill the network with nodes
@@ -39,13 +39,13 @@ public class Simulator {
             JSONArray nodeConnectionsJSONArray = graphJSON.getJSONArray(nodeIdString);
 
             // get or create node
-            Node node = getOrCreateNode(Integer.valueOf(nodeIdString));
+            NetworkNode node = getOrCreateNode(Integer.valueOf(nodeIdString));
 
             // iterate over connections and append to list of connections
             int numOfConnections = nodeConnectionsJSONArray.length();
-            ArrayList<Node> nodeConnections = null;
+            ArrayList<NetworkNode> nodeConnections = null;
             if (numOfConnections > 0) {
-                nodeConnections = new ArrayList<Node>(numOfConnections);
+                nodeConnections = new ArrayList<NetworkNode>(numOfConnections);
                 for (int i = 0; i < numOfConnections; i++) {
                     nodeConnections.add(getOrCreateNode(nodeConnectionsJSONArray.getInt(i)));
                 }
@@ -57,14 +57,14 @@ public class Simulator {
     }
 
 
-    private Node registerNode(int nodeId) {
-        Node newNode = new Node(nodeId);
+    private NetworkNode registerNode(int nodeId) {
+        NetworkNode newNode = new NetworkNode(nodeId);
         nodes.put(nodeId, newNode);
         return newNode;
     }
 
-    private Node getOrCreateNode(int nodeId) {
-        Node node = nodes.get(nodeId);
+    private NetworkNode getOrCreateNode(int nodeId) {
+        NetworkNode node = nodes.get(nodeId);
         if (node == null) {
             node = registerNode(nodeId);
         }

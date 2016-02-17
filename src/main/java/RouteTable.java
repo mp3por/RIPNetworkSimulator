@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class RouteTable {
     public static final Integer INFINITY_COST = 16;
@@ -30,10 +31,23 @@ public class RouteTable {
         routeTable.put(nodeId, routeToSelf);
     }
 
-    public void addRouteTableEntry (RouteTableEntry entry){
+    public void addRouteTableEntry(RouteTableEntry entry) {
         // TODO: handle same key error
         Integer dest = entry.getDest();
         routeTable.put(dest, entry);
+    }
+
+    public HashMap<Integer, Integer> getCosts() {
+        HashMap<Integer, Integer> costs = new HashMap<Integer, Integer>(routeTable.size());
+
+        Iterator<Integer> routeIterator = routeTable.keySet().iterator();
+        while (routeIterator.hasNext()) {
+            RouteTableEntry routeTableEntry = routeTable.get(routeIterator.next());
+            Integer cost = routeTableEntry.getCost();
+            Integer dest = routeTableEntry.getDest();
+            costs.put(dest, cost);
+        }
+        return costs;
     }
 
 
@@ -50,10 +64,17 @@ public class RouteTable {
             }
         }
 
-        public Integer getDest(){
+        public Integer getDest() {
             return fieldValues.get(FIELD.DEST);
         }
 
+        public Integer getCost() {
+            return fieldValues.get(FIELD.COST);
+        }
+
+        public Integer getNextHop() {
+            return fieldValues.get(FIELD.NEXT_HOP);
+        }
     }
 
 
