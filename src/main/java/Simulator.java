@@ -1,165 +1,95 @@
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by velin.
  */
 public class Simulator {
-    // fields
-    private final JSONObject config; // configuration (just in case)
-    private final HashMap<Integer, NetworkNode> nodes; // list of nodes
-    private final Network network; // network
-    private int numOfNodes = 0;
-    private Integer[][] linkCosts;
-    private final int iterations;
+    private final Integer[][] costs;
+    private final int numOfNodes;
+    private final ArrayList<NetworkNode> nodes;
+    private final Integer numOfIterations;
+    private final HashMap<NetworkNode, HashSet<NetworkNode>> nodeConnectionsMap;
 
-    public Simulator(JSONObject config) {
-        // instantiate fields
-        this.config = config;
+    public Simulator(Integer[][] costs, Integer numOfIterations) {
+        this.costs = costs;
+        this.numOfIterations = numOfIterations;
+        this.numOfNodes = this.costs.length;
+        this.nodes = new ArrayList<NetworkNode>(numOfNodes);
+        this.nodeConnectionsMap = new HashMap<NetworkNode, HashSet<NetworkNode>>();
 
 
+        for (int i = 0; i < numOfNodes; i++) {
+            nodes.add(new NetworkNode(i, costs));
+        }
 
+        for (int i = 0; i < numOfNodes; i++) {
+            NetworkNode networkNode = nodes.get(i);
+            HashSet<NetworkNode> connections = new HashSet<NetworkNode>();
+            for (int y = 0; y < numOfNodes; y++) {
+                if (costs[i][y] > 0) {
+                    NetworkNode connectedNode = nodes.get(y);
+                    connections.add(connectedNode);
+                }
+            }
+            nodeConnectionsMap.put(networkNode, connections);
+        }
 
-        this.numOfNodes = this.config.getInt("numOfNodes");
-        this.iterations = this.config.getInt("iterations");
-        this.network = new Network(this.numOfNodes);
-        this.nodes = new HashMap<Integer, NetworkNode>();
+        startSimulation();
 
-        // TODO: validate input data
+    }
 
-//        // fill the network with nodes
-//        fillNetwork();
-//
-//        // start simulation
-//        startSimulation();
+    public String printNodes() {
+        StringBuilder b = new StringBuilder("nodes:");
+
+        for (int i = 0; i < numOfNodes; i++) {
+            b.append(nodes.get(i).nodeId + ", ");
+        }
+        return b.toString();
     }
 
     private void startSimulation() {
-        printState();
-
-
         System.out.println("Starting simulation");
-        for (int currIteration = 0; currIteration < iterations; currIteration++) {
+        printCosts();
+        printStateOfNodes();
+
+        for (int currIteration = 0; currIteration < numOfIterations; currIteration++) {
             System.out.println("--------------- Round " + currIteration + " -----------------");
-//            for (NetworkNode node : nodes.values()) {
-//                HashMap<Integer, Integer> costsMsg = node.getCostsMsg();
-//                ArrayList<NetworkLink> linksForNode = network.getLinksForNode(node);
-//                for (NetworkLink link : linksForNode) {
-//                    link.toNode.receiveCostMsg(costsMsg, node.nodeId);
-//                }
-//
-//                printState();
-//            }
+
+            for (NetworkNode node : nodes) {
+                HashMap<Integer, Integer> nodeCostsMsg = node.getCostsMsg();
+                HashSet<NetworkNode> nodeConnections = nodeConnectionsMap.get(node);
+                for (NetworkNode connectedNode : nodeConnections) {
+                    connectedNode.receiveCostsMsg(nodeCostsMsg, node);
+                }
+            }
+            printStateOfNodes();
             System.out.println("--------------- End round -----------------------------------");
             System.out.println();
             System.out.println();
         }
+
     }
 
-    private void printState() {
-        System.out.println("Printing state of simulation");
-        System.out.println("network:\n");
-        System.out.println("\t" + network.toString());
-        System.out.println("indvidual nodes:\n");
-        ArrayList<Integer> nodesIds = new ArrayList<Integer>(nodes.keySet());
-        for (Integer nodeId : nodesIds) {
-            NetworkNode networkNode = nodes.get(nodeId);
-            System.out.println(networkNode.toString());
-        }
-    }
-
-    private void fillNetwork() {
-        // get costs
-        linkCosts = parseLinkCosts();
-
-        // get graph description
-        JSONObject graphJSON = config.getJSONObject("graph");
-
-        // iterate over the nodes
-        Iterator<String> nodesIterator = graphJSON.keys();
-        while (nodesIterator.hasNext()) {
-            // get node ID as string
-            String nodeIdString = nodesIterator.next();
-
-            // get node connection
-            JSONArray nodeConnectionsJSONArray = graphJSON.getJSONArray(nodeIdString);
-
-            // get or create node
-            NetworkNode node = getOrRegisterNodeForSimulation(Integer.valueOf(nodeIdString));
-
-            // iterate over connections and append to list of connections
-            int numOfConnections = nodeConnectionsJSONArray.length();
-            ArrayList<NetworkLink> nodeConnections = new ArrayList<NetworkLink>();
-            if (numOfConnections > 0) {
-                nodeConnections = new ArrayList<NetworkLink>(numOfConnections);
-                for (int i = 0; i < numOfConnections; i++) {
-                    NetworkNode connectionNode = getOrRegisterNodeForSimulation(nodeConnectionsJSONArray.getInt(i));
-                    NetworkLink link = new NetworkLink(node, connectionNode, linkCosts[node.getNodeId()][connectionNode.getNodeId()]);
-                    nodeConnections.add(link);
-                }
-            }
-
-            // add node to network
-            network.addNode(node, nodeConnections);
-        }
-    }
-
-    private Integer[][] parseLinkCosts() {
-        // extract JSON array representation
-        JSONArray costsJSONArray = config.getJSONArray("costs_between_nodes");
-        numOfNodes = costsJSONArray.length();
-
-        // Instantiate the variable
-        Integer[][] costs = new Integer[numOfNodes][numOfNodes];
-
-        // fill in the costs
+    public void printCosts() {
+        StringBuilder b = new StringBuilder("costs:\n");
         for (int i = 0; i < numOfNodes; i++) {
-            JSONArray innerCostsJSONArray = costsJSONArray.getJSONArray(i);
             for (int y = 0; y < numOfNodes; y++) {
-                int cost = innerCostsJSONArray.getInt(y);
-                costs[i][y] = cost;
-            }
-        }
-        return costs;
-    }
-
-
-    private NetworkNode registerNodeInSimulation(int nodeId) {
-        NetworkNode newNode = new NetworkNode(nodeId, network);
-        nodes.put(nodeId, newNode);
-        return newNode;
-    }
-
-    private NetworkNode getOrRegisterNodeForSimulation(int nodeId) {
-        NetworkNode node = nodes.get(nodeId);
-        if (node == null) {
-            node = registerNodeInSimulation(nodeId);
-        }
-        return node;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("Simulator:\nnodes= [");
-        Iterator<Integer> nodesIterator = nodes.keySet().iterator();
-        while (nodesIterator.hasNext()) {
-            Integer nodeId = nodesIterator.next();
-            b.append(nodes.get(nodeId).toString() + ", ");
-        }
-        b.append("],\nnetwork = " + network.toString());
-        b.append(",\nlink_costs:\n");
-
-        for (int i = 0; i < numOfNodes; i++) {
-            Integer[] innerLinkCost = linkCosts[i];
-            for (int y = 0; y < numOfNodes; y++) {
-                Integer cost = innerLinkCost[y];
-                b.append(cost + " ");
+                b.append("\t" + costs[i][y]);
             }
             b.append("\n");
         }
-
-        return b.toString();
+        System.out.println(b.toString());
     }
+
+    public void printStateOfNodes() {
+        StringBuilder b = new StringBuilder("State of nodes:\n");
+        for (NetworkNode node : nodes) {
+            b.append(node.toString());
+        }
+        System.out.println(b.toString());
+    }
+
+
 }

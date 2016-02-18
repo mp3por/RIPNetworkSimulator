@@ -15,6 +15,17 @@ public class Main {
         Integer numOfNodes = Integer.valueOf(configLineValues[0]);
         Integer numOfIterations = Integer.valueOf(configLineValues[1]);
         Integer[][] costs = new Integer[numOfNodes][numOfNodes];
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int y = 0; y < numOfNodes; y++) {
+                if (i == y) {
+                    costs[i][y] = 0;
+                } else {
+                    costs[i][y] = -1;
+                }
+            }
+        }
+
+
         for (int i = 1; i < inputLines.length; i++) {
             String inputLine = inputLines[i];
             String[] inputLineValues = inputLine.split(" ");
@@ -25,23 +36,9 @@ public class Main {
         }
 
 
+        Simulator simulator = new Simulator(costs, numOfIterations);
 
 
-//        JSONObject inputJSON = new JSONObject(inputString);
-
-//        FileInputStream fstream = new FileInputStream("textfile.txt");
-//        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-//
-//        String strLine;
-//        while ((strLine = br.readLine()) != null)   {
-//            // Print the content on the console
-//            System.out.println (strLine);
-//        }
-//
-//        br.close();
-
-
-//        Simulator simulator = new Simulator(inputJSON);
-//        System.out.println(simulator.toString());
     }
+
 }
