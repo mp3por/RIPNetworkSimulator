@@ -68,12 +68,10 @@ public class NetworkNode {
                         if (actualCost < currCostToNode) {
                             // update entry to reflect new cost and next_hop
                             routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
-                            System.out.println("Update route table 1");
                         }
                     } else {
                         // must create new entry
                         routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
-                        System.out.println("Update route table ");
                     }
                 }
             }

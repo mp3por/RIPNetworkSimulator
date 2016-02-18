@@ -33,6 +33,7 @@ public class Main {
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer linkCost = Integer.valueOf(inputLineValues[2]);
             costs[fromNodeId][toNodeId] = linkCost;
+            costs[toNodeId][fromNodeId] = linkCost;
         }
 
 
