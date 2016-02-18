@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 public class RouteTable {
@@ -65,13 +66,16 @@ public class RouteTable {
     }
 
     public void reduceAllForgetCounters() {
+        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
         for (RouteTableEntry entry : routeTable.values()) {
             entry.reduceForgetCounter();
             if (entry.shouldForget()) {
-                routeTable.remove(entry.getDest());
+                toBeRemoved.add(entry);
             }
         }
-
+        for (RouteTableEntry entry : toBeRemoved) {
+            routeTable.remove(entry);
+        }
     }
 
     public void nodeHasContacted(NetworkNode sender) {

@@ -8,7 +8,7 @@ import java.util.HashSet;
 public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
     public static final Integer DEFAULT_NUM_OF_ITERATIONS = 100;
 
-    private final Integer[][] costs;
+    private final NetworkLink[][] links;
     private final int numOfNodes;
     private final ArrayList<NetworkNode> nodes;
     private final Integer numOfIterations;
@@ -16,24 +16,24 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
     private boolean isStable;
     private boolean untilStability;
 
-    public Simulator(Integer[][] costs, Integer numOfIterations, boolean untilStability) {
-        this.costs = costs;
+    public Simulator(NetworkLink[][] links, Integer numOfIterations, boolean untilStability) {
+        this.links = links;
         this.numOfIterations = numOfIterations != null ? numOfIterations : DEFAULT_NUM_OF_ITERATIONS;
-        this.numOfNodes = this.costs.length;
+        this.numOfNodes = this.links.length;
         this.nodes = new ArrayList<NetworkNode>(numOfNodes);
         this.nodeConnectionsMap = new HashMap<NetworkNode, HashSet<NetworkNode>>();
         this.isStable = false;
         this.untilStability = untilStability;
 
         for (int i = 0; i < numOfNodes; i++) {
-            nodes.add(new NetworkNode(i, costs, this));
+            nodes.add(new NetworkNode(i, links, this));
         }
 
         for (int i = 0; i < numOfNodes; i++) {
             NetworkNode networkNode = nodes.get(i);
             HashSet<NetworkNode> connections = new HashSet<NetworkNode>();
             for (int y = 0; y < numOfNodes; y++) {
-                if (costs[i][y] > 0) {
+                if (links[i][y].cost > 0) {
                     NetworkNode connectedNode = nodes.get(y);
                     connections.add(connectedNode);
                 }
@@ -86,10 +86,10 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
     }
 
     public void printCosts() {
-        StringBuilder b = new StringBuilder("costs:\n");
+        StringBuilder b = new StringBuilder("links:\n");
         for (int i = 0; i < numOfNodes; i++) {
             for (int y = 0; y < numOfNodes; y++) {
-                b.append("\t" + costs[i][y]);
+                b.append("\t" + links[i][y]);
             }
             b.append("\n");
         }

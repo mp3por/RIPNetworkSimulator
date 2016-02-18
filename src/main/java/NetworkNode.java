@@ -6,13 +6,13 @@ import java.util.Iterator;
  */
 public class NetworkNode {
     protected final Integer nodeId;
-    protected final Integer[][] costs;
+    protected final NetworkLink[][] links;
     private final RouteTable routeTable;
     private final DistanceVectorRoutingAlg routeAlg;
 
-    public NetworkNode(int nodeId, Integer[][] costs, NetworkNodeRouteTableListener listener) {
+    public NetworkNode(int nodeId, NetworkLink[][] links, NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
-        this.costs = costs;
+        this.links = links;
         this.routeTable = new RouteTable(nodeId, listener);
         this.routeAlg = new DistanceVectorRoutingAlg();
     }
@@ -44,7 +44,7 @@ public class NetworkNode {
     public class DistanceVectorRoutingAlg {
 
         public synchronized void handleCostMsg(HashMap<Integer, Integer> costMsg, NetworkNode sender) {
-            Integer linkCost = NetworkNode.this.costs[nodeId][sender.getNodeId()];
+            Integer linkCost = NetworkNode.this.links[nodeId][sender.getNodeId()].cost;
 
             if (linkCost > 0) { // link exists
                 // notify route table that sender has contacted

@@ -1,0 +1,14 @@
+required:
+-numOfNodes <int>
+
+optional
+-maxIterations <int, default=100>
+-untilStability <string, default="false">
+
+link config
+fromNodeId toNodeId linkCost
+     0        1         3
+
+link change config
+fromNodeId toNodeId changeCostAfterExchange newCost
+    0         1                 5             10
