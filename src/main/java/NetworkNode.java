@@ -59,12 +59,8 @@ public class NetworkNode {
 
                     // get current cost to said node
                     Integer currCostToNode = routeTable.getCost(nodeId);
-
-                    HashMap<RouteTable.FIELD, Integer> entryValues = new HashMap<RouteTable.FIELD, Integer>(RouteTable.NUM_OF_FIELDS);
-                    entryValues.put(RouteTable.FIELD.DEST, nodeId);
-                    entryValues.put(RouteTable.FIELD.NEXT_HOP, sender.getNodeId());
-                    entryValues.put(RouteTable.FIELD.COST, actualCost);
-                    RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(entryValues);
+                    
+                    RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(nodeId, actualCost, sender.getNodeId());
 
                     // currCostToNOde !=null && !(advertisedCostToNode > currCostToNode)
                     if (currCostToNode != null) {

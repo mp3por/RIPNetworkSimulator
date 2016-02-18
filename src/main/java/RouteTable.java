@@ -4,19 +4,8 @@ import java.util.Iterator;
 
 public class RouteTable {
     public static final Integer INFINITY_COST = 16;
-    public static final int NUM_OF_FIELDS = FIELD.values().length;
     private final NetworkNode.NetworkNodeRouteTableListener listener;
 
-    enum FIELD {
-        DEST(0, "Destination"), COST(1, "Cost"), NEXT_HOP(2, "Next hop");
-        private int index;
-        private String verboseName;
-
-        FIELD(int index, String verboseName) {
-            this.index = index;
-            this.verboseName = verboseName;
-        }
-    }
 
     private final HashMap<Integer, RouteTableEntry> routeTable;
     private final int nodeId;
@@ -26,12 +15,7 @@ public class RouteTable {
         this.listener = listener;
         this.routeTable = new HashMap<Integer, RouteTableEntry>();
 
-        HashMap<FIELD, Integer> entryValues = new HashMap<FIELD, Integer>();
-        entryValues.put(FIELD.DEST, nodeId);
-        entryValues.put(FIELD.COST, 0);
-        entryValues.put(FIELD.NEXT_HOP, null);
-
-        RouteTableEntry routeToSelf = new RouteTableEntry(entryValues);
+        RouteTableEntry routeToSelf = new RouteTableEntry(this.nodeId, 0, null);
         routeTable.put(nodeId, routeToSelf);
     }
 
@@ -67,12 +51,12 @@ public class RouteTable {
     public String toString() {
         StringBuilder b = new StringBuilder("RouteTable for node : " + nodeId + "\n");
         b.append("\tdest cost next\n");
-        Object[] routesDest =  routeTable.keySet().toArray();
+        Object[] routesDest = routeTable.keySet().toArray();
         Arrays.sort(routesDest);
         for (int i = 0; i < routesDest.length; i++) {
             Integer routesDestNodeId = (Integer) routesDest[i];
             RouteTableEntry routeTableEntry = routeTable.get(routesDestNodeId);
-            String format = String.format("\t%4d%5d%5d\n",routeTableEntry.getDest(), routeTableEntry.getCost(), routeTableEntry.getNextHop() );
+            String format = String.format("\t%4d%5d%5d\n", routeTableEntry.getDest(), routeTableEntry.getCost(), routeTableEntry.getNextHop());
             b.append(format);
         }
 
@@ -81,27 +65,27 @@ public class RouteTable {
 
     public class RouteTableEntry {
 
-        private HashMap<FIELD, Integer> fieldValues;
+        private final Integer destNodeId;
+        private Integer cost;
+        private Integer nextNodeId;
 
-        public RouteTableEntry(HashMap<FIELD, Integer> entryValues) {
+        public RouteTableEntry(Integer destNodeId, Integer cost, Integer nextNodeId) {
             // TODO: check values and raise error
-            this.fieldValues = new HashMap<FIELD, Integer>(FIELD.values().length);
-            for (FIELD field : FIELD.values()) {
-                Integer fieldValue = entryValues.get(field);
-                this.fieldValues.put(field, fieldValue);
-            }
+            this.destNodeId = destNodeId;
+            this.cost = cost;
+            this.nextNodeId = nextNodeId;
         }
 
         public Integer getDest() {
-            return fieldValues.get(FIELD.DEST);
+            return destNodeId;
         }
 
         public Integer getCost() {
-            return fieldValues.get(FIELD.COST);
+            return cost;
         }
 
         public Integer getNextHop() {
-            return fieldValues.get(FIELD.NEXT_HOP);
+            return nextNodeId;
         }
     }
 
