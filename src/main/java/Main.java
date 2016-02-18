@@ -50,10 +50,10 @@ public class Main {
         inputLinesIndex++; // move to next line
 
         // parse link changes
-//        HashMap<Integer, HashSet<NetworkLink>>
+        HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents = new HashMap<Integer, HashSet<ScheduledNetworkEvent>>();
         for (; inputLinesIndex < inputLines.length; inputLinesIndex++) {
             String inputLine = inputLines[inputLinesIndex];
-            if (inputLine.contains("##")){
+            if (inputLine.contains("##")) {
                 break;
             }
             String[] inputLineValues = inputLine.split(" ");
@@ -61,7 +61,14 @@ public class Main {
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer changeAfterExchange = Integer.valueOf(inputLineValues[2]);
             Integer newCost = Integer.valueOf(inputLineValues[3]);
-
+            NetworkLink networkLink = links[fromNodeId][toNodeId];
+            LinkCostChangeNetworkEvent event = new LinkCostChangeNetworkEvent(changeAfterExchange, networkLink, newCost);
+            HashSet<ScheduledNetworkEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
+            if (scheduledNetworkEvents == null) {
+                scheduledNetworkEvents = new HashSet<ScheduledNetworkEvent>();
+                scheduledEvents.put(changeAfterExchange, scheduledNetworkEvents);
+            }
+            scheduledNetworkEvents.add(event);
         }
 
         // look maxIterations flag
@@ -79,7 +86,7 @@ public class Main {
         }
 
 
-        Simulator simulator = new Simulator(links, numOfIterations, untilStability);
+        Simulator simulator = new Simulator(links, numOfIterations, untilStability, scheduledEvents);
     }
 
 }

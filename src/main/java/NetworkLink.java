@@ -7,4 +7,9 @@ public class NetworkLink {
     public NetworkLink(Integer cost) {
         this.cost = cost;
     }
+
+    @Override
+    public String toString() {
+        return "Link: cost-" + cost;
+    }
 }

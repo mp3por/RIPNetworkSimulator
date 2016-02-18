@@ -5,16 +5,23 @@ import java.util.Iterator;
  * Created by velin.
  */
 public class NetworkNode {
+
+    enum STATUS {
+        ACTIVE, FAILED
+    }
+
     protected final Integer nodeId;
     protected final NetworkLink[][] links;
     private final RouteTable routeTable;
     private final DistanceVectorRoutingAlg routeAlg;
+    protected STATUS status;
 
-    public NetworkNode(int nodeId, NetworkLink[][] links, NetworkNodeRouteTableListener listener) {
+    public NetworkNode(int nodeId, NetworkLink[][] links, NetworkNodeRouteTableListener listener, STATUS currentStatus) {
         this.nodeId = nodeId;
         this.links = links;
         this.routeTable = new RouteTable(nodeId, listener);
         this.routeAlg = new DistanceVectorRoutingAlg();
+        this.status = currentStatus;
     }
 
     public HashMap<Integer, Integer> getCostsMsg() {
@@ -23,7 +30,9 @@ public class NetworkNode {
     }
 
     public void receiveCostsMsg(HashMap<Integer, Integer> receivedCosts, NetworkNode sender) {
-        routeAlg.handleCostMsg(receivedCosts, sender);
+        if (status.equals(STATUS.ACTIVE)) {
+            routeAlg.handleCostMsg(receivedCosts, sender);
+        }
     }
 
     public Integer getNodeId() {
@@ -39,6 +48,10 @@ public class NetworkNode {
 
     public interface NetworkNodeRouteTableListener {
         void onRouteTableUpdate(Integer nodeId);
+    }
+
+    public boolean isActive() {
+        return status.equals(STATUS.ACTIVE);
     }
 
     public class DistanceVectorRoutingAlg {
