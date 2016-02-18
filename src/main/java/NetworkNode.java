@@ -18,6 +18,7 @@ public class NetworkNode {
     }
 
     public HashMap<Integer, Integer> getCostsMsg() {
+        routeTable.reduceAllForgetCounters();
         return routeTable.getCosts();
     }
 
@@ -36,7 +37,7 @@ public class NetworkNode {
         return b.toString();
     }
 
-    public interface NetworkNodeRouteTableListener{
+    public interface NetworkNodeRouteTableListener {
         void onRouteTableUpdate(Integer nodeId);
     }
 
@@ -45,33 +46,39 @@ public class NetworkNode {
         public synchronized void handleCostMsg(HashMap<Integer, Integer> costMsg, NetworkNode sender) {
             Integer linkCost = NetworkNode.this.costs[nodeId][sender.getNodeId()];
 
-            Iterator<Integer> nodesIterator = costMsg.keySet().iterator();
-            while (nodesIterator.hasNext()) {
-                // get node id
-                Integer nodeId = nodesIterator.next();
-                if (nodeId != NetworkNode.this.nodeId) {
+            if (linkCost > 0) { // link exists
+                // notify route table that sender has contacted
+                routeTable.nodeHasContacted(sender);
 
-                    // get cost advertised by the sender
-                    Integer advertisedCostToNode = costMsg.get(nodeId);
+                // iterate over msg and check new routes
+                Iterator<Integer> nodesIterator = costMsg.keySet().iterator();
+                while (nodesIterator.hasNext()) {
+                    // get node id
+                    Integer nodeId = nodesIterator.next();
+                    if (nodeId != NetworkNode.this.nodeId) {
 
-                    // calculate actual cost
-                    Integer actualCost = advertisedCostToNode + linkCost;
+                        // get cost advertised by the sender
+                        Integer advertisedCostToNode = costMsg.get(nodeId);
 
-                    // get current cost to said node
-                    Integer currCostToNode = routeTable.getCost(nodeId);
-                    
-                    RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(nodeId, actualCost, sender.getNodeId());
+                        // calculate actual cost
+                        Integer actualCost = advertisedCostToNode + linkCost;
 
-                    // currCostToNOde !=null && !(advertisedCostToNode > currCostToNode)
-                    if (currCostToNode != null) {
-                        // entry exists
-                        if (actualCost < currCostToNode) {
-                            // update entry to reflect new cost and next_hop
+                        // get current cost to said node
+                        Integer currCostToNode = routeTable.getCost(nodeId);
+
+                        RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(nodeId, actualCost, sender.getNodeId());
+
+                        // currCostToNOde !=null && !(advertisedCostToNode > currCostToNode)
+                        if (currCostToNode != null) {
+                            // entry exists
+                            if (actualCost < currCostToNode) {
+                                // update entry to reflect new cost and next_hop
+                                routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
+                            }
+                        } else {
+                            // must create new entry
                             routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
                         }
-                    } else {
-                        // must create new entry
-                        routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
                     }
                 }
             }

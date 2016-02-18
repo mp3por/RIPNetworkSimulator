@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 public class RouteTable {
     public static final Integer INFINITY_COST = 16;
+    public static final Integer FORGET_AFTER_DEFAULT = 16;
     private final NetworkNode.NetworkNodeRouteTableListener listener;
 
 
@@ -63,17 +64,43 @@ public class RouteTable {
         return b.toString();
     }
 
+    public void reduceAllForgetCounters() {
+        for (RouteTableEntry entry : routeTable.values()) {
+            entry.reduceForgetCounter();
+            if (entry.shouldForget()) {
+                routeTable.remove(entry.getDest());
+            }
+        }
+
+    }
+
+    public void nodeHasContacted(NetworkNode sender) {
+        RouteTableEntry routeTableEntry = routeTable.get(sender.getNodeId());
+        if (routeTableEntry != null) {
+            routeTableEntry.resetForgetCounter();
+        }
+    }
+
     public class RouteTableEntry {
 
         private final Integer destNodeId;
         private Integer cost;
         private Integer nextNodeId;
+        private Integer forgetCounter = FORGET_AFTER_DEFAULT;
 
         public RouteTableEntry(Integer destNodeId, Integer cost, Integer nextNodeId) {
             // TODO: check values and raise error
             this.destNodeId = destNodeId;
             this.cost = cost;
             this.nextNodeId = nextNodeId;
+        }
+
+        public void reduceForgetCounter() {
+            forgetCounter--;
+        }
+
+        public void resetForgetCounter() {
+            forgetCounter = FORGET_AFTER_DEFAULT;
         }
 
         public Integer getDest() {
@@ -86,6 +113,10 @@ public class RouteTable {
 
         public Integer getNextHop() {
             return nextNodeId;
+        }
+
+        public boolean shouldForget() {
+            return forgetCounter <= 0;
         }
     }
 
