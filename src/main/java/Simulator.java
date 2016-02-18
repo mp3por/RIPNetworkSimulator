@@ -5,12 +5,14 @@ import java.util.HashSet;
 /**
  * Created by velin.
  */
-public class Simulator {
+public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
+
     private final Integer[][] costs;
     private final int numOfNodes;
     private final ArrayList<NetworkNode> nodes;
     private final Integer numOfIterations;
     private final HashMap<NetworkNode, HashSet<NetworkNode>> nodeConnectionsMap;
+    private boolean isStable;
 
     public Simulator(Integer[][] costs, Integer numOfIterations) {
         this.costs = costs;
@@ -18,10 +20,10 @@ public class Simulator {
         this.numOfNodes = this.costs.length;
         this.nodes = new ArrayList<NetworkNode>(numOfNodes);
         this.nodeConnectionsMap = new HashMap<NetworkNode, HashSet<NetworkNode>>();
-
+        this.isStable = false;
 
         for (int i = 0; i < numOfNodes; i++) {
-            nodes.add(new NetworkNode(i, costs));
+            nodes.add(new NetworkNode(i, costs, this));
         }
 
         for (int i = 0; i < numOfNodes; i++) {
@@ -55,20 +57,29 @@ public class Simulator {
         printStateOfNodes();
 
         for (int currIteration = 0; currIteration < numOfIterations; currIteration++) {
-            System.out.println("--------------- Round " + currIteration + " -----------------");
 
-            for (NetworkNode node : nodes) {
-                HashMap<Integer, Integer> nodeCostsMsg = node.getCostsMsg();
-                HashSet<NetworkNode> nodeConnections = nodeConnectionsMap.get(node);
-                for (NetworkNode connectedNode : nodeConnections) {
-                    connectedNode.receiveCostsMsg(nodeCostsMsg, node);
+            if (!isStable) {
+                System.out.println("--------------- Round " + currIteration + " -----------------");
+
+                isStable = true;
+                for (NetworkNode node : nodes) {
+                    HashMap<Integer, Integer> nodeCostsMsg = node.getCostsMsg();
+                    HashSet<NetworkNode> nodeConnections = nodeConnectionsMap.get(node);
+                    for (NetworkNode connectedNode : nodeConnections) {
+                        connectedNode.receiveCostsMsg(nodeCostsMsg, node);
+                    }
                 }
+                printStateOfNodes();
+
+                System.out.println("--------------- End round -----------------------------------");
+                System.out.println();
+                System.out.println();
+            } else {
+                System.out.println("Stability reached after iteration: " + currIteration);
+                break;
             }
-            printStateOfNodes();
-            System.out.println("--------------- End round -----------------------------------");
-            System.out.println();
-            System.out.println();
         }
+
 
     }
 
@@ -92,4 +103,7 @@ public class Simulator {
     }
 
 
+    public void onRouteTableUpdate(Integer nodeId) {
+        isStable = false;
+    }
 }

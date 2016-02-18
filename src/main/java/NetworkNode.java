@@ -10,10 +10,10 @@ public class NetworkNode {
     private final RouteTable routeTable;
     private final DistanceVectorRoutingAlg routeAlg;
 
-    public NetworkNode(int nodeId, Integer[][] costs) {
+    public NetworkNode(int nodeId, Integer[][] costs, NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
         this.costs = costs;
-        this.routeTable = new RouteTable(nodeId);
+        this.routeTable = new RouteTable(nodeId, listener);
         this.routeAlg = new DistanceVectorRoutingAlg();
     }
 
@@ -34,6 +34,10 @@ public class NetworkNode {
         StringBuilder b = new StringBuilder("NetworkNode " + nodeId + ":\n");
         b.append(routeTable.toString());
         return b.toString();
+    }
+
+    public interface NetworkNodeRouteTableListener{
+        void onRouteTableUpdate(Integer nodeId);
     }
 
     public class DistanceVectorRoutingAlg {
@@ -62,15 +66,18 @@ public class NetworkNode {
                     entryValues.put(RouteTable.FIELD.COST, actualCost);
                     RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(entryValues);
 
+                    // currCostToNOde !=null && !(advertisedCostToNode > currCostToNode)
                     if (currCostToNode != null) {
                         // entry exists
-                        if (advertisedCostToNode < currCostToNode) {
+                        if (actualCost < currCostToNode) {
                             // update entry to reflect new cost and next_hop
                             routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
+                            System.out.println("Update route table 1");
                         }
                     } else {
                         // must create new entry
                         routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
+                        System.out.println("Update route table ");
                     }
                 }
             }

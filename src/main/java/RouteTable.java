@@ -5,6 +5,7 @@ import java.util.Iterator;
 public class RouteTable {
     public static final Integer INFINITY_COST = 16;
     public static final int NUM_OF_FIELDS = FIELD.values().length;
+    private final NetworkNode.NetworkNodeRouteTableListener listener;
 
     enum FIELD {
         DEST(0, "Destination"), COST(1, "Cost"), NEXT_HOP(2, "Next hop");
@@ -20,8 +21,9 @@ public class RouteTable {
     private final HashMap<Integer, RouteTableEntry> routeTable;
     private final int nodeId;
 
-    public RouteTable(int nodeId) {
+    public RouteTable(int nodeId, NetworkNode.NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
+        this.listener = listener;
         this.routeTable = new HashMap<Integer, RouteTableEntry>();
 
         HashMap<FIELD, Integer> entryValues = new HashMap<FIELD, Integer>();
@@ -45,10 +47,7 @@ public class RouteTable {
         // TODO: handle same key error
         Integer dest = entry.getDest();
         routeTable.put(dest, entry);
-    }
-
-    public void updateRoute(HashMap<FIELD, Integer> entryValues) {
-
+        listener.onRouteTableUpdate(nodeId);
     }
 
     public HashMap<Integer, Integer> getCosts() {
@@ -73,7 +72,8 @@ public class RouteTable {
         for (int i = 0; i < routesDest.length; i++) {
             Integer routesDestNodeId = (Integer) routesDest[i];
             RouteTableEntry routeTableEntry = routeTable.get(routesDestNodeId);
-            b.append("\t" + routeTableEntry.getDest() + " " + routeTableEntry.getCost() + " " + routeTableEntry.getNextHop() + "\n");
+            String format = String.format("\t%4d%5d%5d\n",routeTableEntry.getDest(), routeTableEntry.getCost(), routeTableEntry.getNextHop() );
+            b.append(format);
         }
 
         return b.toString();
