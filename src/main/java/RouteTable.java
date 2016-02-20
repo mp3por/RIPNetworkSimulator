@@ -78,7 +78,10 @@ public class RouteTable {
     }
 
     private void removeEntryForDest(Integer nodeId) {
-        routeTable.remove(nodeId);
+        RouteTableEntry removedEntry = routeTable.remove(nodeId);
+        if (removedEntry != null) {
+            listener.onRouteTableUpdate(nodeId);
+        }
     }
 
 //    public void reduceAllForgetCounters() {

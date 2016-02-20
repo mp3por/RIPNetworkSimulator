@@ -29,18 +29,19 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             System.out.println("--------------- Round " + currIteration + " -----------------");
 
             simulateNetworkExchange();
+            System.out.println();
             if (isStable) {
                 if (untilStability) {
                     System.out.println("Stability reached after iteration: " + (currIteration - 1));
                     break;
                 } else {
-                    System.out.println();
                     System.out.println("Network stable for this round");
                     System.out.println();
 //                    printStateOfNodes();
                 }
 
             } else {
+                System.out.println("There was a change(s). Nodes state after change(s):");
                 printStateOfNodes();
             }
             simulateNetworkEvents(currIteration);
@@ -58,8 +59,6 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             for (ScheduledEvent event : scheduledEvents) {
                 event.executeEvent();
             }
-            printCosts();
-            printNodes();
         }
     }
 
@@ -112,7 +111,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     public void printStateOfNodes() {
         StringBuilder b = new StringBuilder("State of nodes:\n");
         for (NetworkNode node : nodesMap.values()) {
-            b.append(node.toString());
+            b.append(node.toString() + "\n");
         }
         System.out.println(b.toString());
     }
@@ -122,9 +121,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         isStable = false;
     }
 
-    public Simulator() throws Exception {
+    public Simulator(String fileName) throws Exception {
         // read file and parse into lines
-        String[] inputLines = FileUtils.readFileToString(new File("src/main/java/input.txt")).split("\n");
+        String[] inputLines = FileUtils.readFileToString(new File(fileName)).split("\n");
         int inputLinesIndex = 0;
 
         // look for numOfNodes

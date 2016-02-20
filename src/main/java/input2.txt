@@ -1,0 +1,6 @@
+-numOfNodes 3 -maxIterations 10 -untilStability false
+0 1 1
+1 2 1
+## links changes
+1 2 5 -1
+## show best routes
