@@ -6,10 +6,6 @@ import java.util.Iterator;
  */
 public class NetworkNode {
 
-    public interface NetworkNodeRouteTableListener {
-        void onRouteTableUpdate(Integer nodeId);
-    }
-
     /**
      * Node status
      */
@@ -43,7 +39,7 @@ public class NetworkNode {
      * @param nodeId   node id
      * @param listener listener for routing table changes
      */
-    public NetworkNode(int nodeId, NetworkNodeRouteTableListener listener) {
+    public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
         this.routeTable = new RouteTable(nodeId, listener);
         this.status = STATUS.ACTIVE;
@@ -68,7 +64,7 @@ public class NetworkNode {
         routeTable.reduceAllForgetCounters();
         return routeTable.getCosts();
     }
-    
+
     /**
      * Getter for node Id
      *

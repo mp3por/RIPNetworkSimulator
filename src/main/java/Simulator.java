@@ -5,7 +5,7 @@ import java.util.HashSet;
 /**
  * Created by velin.
  */
-public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
+public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
     public static final Integer DEFAULT_NUM_OF_ITERATIONS = 100;
 
     private final NetworkLink[][] links;

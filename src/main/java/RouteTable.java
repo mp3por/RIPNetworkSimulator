@@ -1,15 +1,18 @@
 import java.util.*;
 
 public class RouteTable {
+    public interface NetworkNodeRouteTableListener {
+        void onRouteTableUpdate(Integer nodeId);
+    }
     public static final Integer INFINITY_COST = 64;
     public static final Integer FORGET_AFTER_DEFAULT = 16;
-    private final NetworkNode.NetworkNodeRouteTableListener listener;
+    private final NetworkNodeRouteTableListener listener;
 
 
     private final HashMap<Integer, RouteTableEntry> routeTable;
     private final int nodeId;
 
-    public RouteTable(int nodeId, NetworkNode.NetworkNodeRouteTableListener listener) {
+    public RouteTable(int nodeId, NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
         this.listener = listener;
         this.routeTable = new HashMap<Integer, RouteTableEntry>();
