@@ -1,4 +1,4 @@
--numOfNodes 4 -maxIterations 10 -untilStability false
+-numOfNodes 4 -maxIterations 10 -untilStability true
 0 1 3
 0 3 7
 1 2 6

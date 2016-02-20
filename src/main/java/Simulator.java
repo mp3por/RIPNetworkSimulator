@@ -62,20 +62,21 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
         printStateOfNodes();
         printScheduledEvents();
 
-        for (int currIteration = 0; currIteration < numOfIterations; currIteration++) {
-
-            if (untilStability && isStable) {
-                System.out.println("Stability reached after iteration: " + currIteration);
-                break;
-            }
+        for (int currIteration = 1; currIteration <= numOfIterations; currIteration++) {
             System.out.println("--------------- Round " + currIteration + " -----------------");
 
             simulateNetworkExchange();
             if (isStable) {
-                System.out.println();
-                System.out.println("Network stable for this round");
-                System.out.println();
-//                printStateOfNodes();
+                if (untilStability){
+                    System.out.println("Stability reached after iteration: " + currIteration);
+                    break;
+                } else {
+                    System.out.println();
+                    System.out.println("Network stable for this round");
+                    System.out.println();
+//                    printStateOfNodes();
+                }
+
             } else {
                 printStateOfNodes();
             }

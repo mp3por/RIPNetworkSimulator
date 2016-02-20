@@ -78,29 +78,18 @@ public class NetworkNode {
                 Integer currCostToNode = routeTable.getCost(destinationId);
 
                 if (newCost < currCostToNode) {
+                    // log new cost and sender
                     routeTable.logDestCost(destinationId, newCost, sender);
                 } else if (newCost > currCostToNode) {
+                    // check for link cost change
                     Integer routeNextHopForDest = routeTable.getRouteNextHopForDest(destinationId);
                     if (routeNextHopForDest != null && routeNextHopForDest.equals(sender.getNodeId())) {
+                        // save new cost even though it is bigger than the current cost because it was
+                        // advertised by the same node which advertised the current cost meaning that
+                        // the link cost has changed for the worse
                         routeTable.logDestCost(destinationId, newCost, sender);
                     }
                 }
-
-//                // get current route entry if exists
-//                RouteTable.RouteTableEntry existingRouteEntryForDest = routeTable.getRouteEntryForDest(destinationId);
-//
-//                // create new route table entry
-//                RouteTable.RouteTableEntry newRouteEntryForDest = routeTable.new RouteTableEntry(destinationId, newCost, sender.getNodeId());
-//
-//                if (existingRouteEntryForDest == null) {
-//                    routeTable.addTableEntryForDest(newRouteEntryForDest);
-//                } else {
-//                    if (newRouteEntryForDest.isBetterThan(existingRouteEntryForDest)) {
-//                        routeTable.updateTableEntryForDest(newRouteEntryForDest);
-//                    } else if (newRouteEntryForDest.comesFromHost(sender.getNodeId()) && newRouteEntryForDest.isWorseThan(existingRouteEntryForDest)) {
-//                        routeTable.updateTableEntryForDest(newRouteEntryForDest);
-//                    }
-//                }
             }
         }
     }
