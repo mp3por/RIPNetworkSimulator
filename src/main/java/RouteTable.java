@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class RouteTable {
-    public static final Integer INFINITY_COST = 16;
+    public static final Integer INFINITY_COST = 64;
     public static final Integer FORGET_AFTER_DEFAULT = 16;
     private final NetworkNode.NetworkNodeRouteTableListener listener;
 
@@ -26,13 +26,16 @@ public class RouteTable {
         if (routeTableEntry != null) {
             return routeTableEntry.getCost();
         }
-        return null;
+        return INFINITY_COST;
     }
 
-    public void addOrUpdateRouteTableEntry(RouteTableEntry entry) {
-        // TODO: handle same key error
-        Integer dest = entry.getDest();
-        routeTable.put(dest, entry);
+    public void updateTableEntryForDest(RouteTableEntry entry) {
+        routeTable.put(entry.getDest(), entry);
+        listener.onRouteTableUpdate(nodeId);
+    }
+
+    public void addTableEntryForDest(RouteTableEntry entry) {
+        routeTable.put(entry.getDest(), entry);
         listener.onRouteTableUpdate(nodeId);
     }
 
@@ -85,6 +88,24 @@ public class RouteTable {
         }
     }
 
+    public RouteTableEntry getRouteEntryForDest(Integer nodeId) {
+        return routeTable.get(nodeId);
+    }
+
+    public void logDestCost(Integer destinationId, Integer newCost, NetworkNode sender) {
+        RouteTableEntry entry = new RouteTableEntry(destinationId, newCost, sender.getNodeId());
+        routeTable.put(destinationId, entry);
+        listener.onRouteTableUpdate(nodeId);
+    }
+
+    public Integer getRouteNextHopForDest(Integer destinationId) {
+        RouteTableEntry entry = routeTable.get(destinationId);
+        if (entry != null){
+            return entry.nextNodeId;
+        }
+        return null;
+    }
+
     public class RouteTableEntry {
 
         private final Integer destNodeId;
@@ -121,6 +142,23 @@ public class RouteTable {
 
         public boolean shouldForget() {
             return forgetCounter <= 0;
+        }
+
+        public boolean comesFromHost(Integer senderId) {
+            return nextNodeId.equals(senderId);
+        }
+
+        public boolean isWorseThan(RouteTableEntry entry) {
+            return cost > entry.cost;
+        }
+
+        public boolean isBetterThan(RouteTableEntry entry) {
+            return cost < entry.cost;
+        }
+
+        @Override
+        public String toString() {
+            return "RouteEntry{" + destNodeId + ", " + cost + ", " + nextNodeId + "}";
         }
     }
 

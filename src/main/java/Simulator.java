@@ -71,6 +71,14 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
             System.out.println("--------------- Round " + currIteration + " -----------------");
 
             simulateNetworkExchange();
+            if (isStable) {
+                System.out.println();
+                System.out.println("Network stable for this round");
+                System.out.println();
+//                printStateOfNodes();
+            } else {
+                printStateOfNodes();
+            }
             simulateNetworkEvents(currIteration);
 
             System.out.println("--------------- End round " + currIteration + " -----------------------------------");
@@ -88,6 +96,7 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
             for (ScheduledNetworkEvent event : scheduledNetworkEvents) {
                 event.executeEvent();
             }
+            printCosts();
         }
     }
 
@@ -98,11 +107,12 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
                 HashMap<Integer, Integer> nodeCostsMsg = node.getCostsMsg();
                 HashSet<NetworkNode> nodeConnections = nodeConnectionsMap.get(node);
                 for (NetworkNode connectedNode : nodeConnections) {
-                    connectedNode.receiveCostsMsg(nodeCostsMsg, node);
+                    if (links[node.getNodeId()][connectedNode.getNodeId()].cost >= 0) {
+                        connectedNode.receiveCostsMsg(nodeCostsMsg, node);
+                    }
                 }
             }
         }
-        printStateOfNodes();
     }
 
     public void printCosts() {

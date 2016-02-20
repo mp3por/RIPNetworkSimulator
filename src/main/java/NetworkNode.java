@@ -13,14 +13,12 @@ public class NetworkNode {
     protected final Integer nodeId;
     protected final NetworkLink[][] links;
     private final RouteTable routeTable;
-    private final DistanceVectorRoutingAlg routeAlg;
     protected STATUS status;
 
     public NetworkNode(int nodeId, NetworkLink[][] links, NetworkNodeRouteTableListener listener, STATUS currentStatus) {
         this.nodeId = nodeId;
         this.links = links;
         this.routeTable = new RouteTable(nodeId, listener);
-        this.routeAlg = new DistanceVectorRoutingAlg();
         this.status = currentStatus;
     }
 
@@ -31,7 +29,7 @@ public class NetworkNode {
 
     public void receiveCostsMsg(HashMap<Integer, Integer> receivedCosts, NetworkNode sender) {
         if (status.equals(STATUS.ACTIVE)) {
-            routeAlg.handleCostMsg(receivedCosts, sender);
+            handleCostsMsg(receivedCosts, sender);
         }
     }
 
@@ -54,47 +52,57 @@ public class NetworkNode {
         return status.equals(STATUS.ACTIVE);
     }
 
-    public class DistanceVectorRoutingAlg {
 
-        public synchronized void handleCostMsg(HashMap<Integer, Integer> costMsg, NetworkNode sender) {
-            Integer linkCost = NetworkNode.this.links[nodeId][sender.getNodeId()].cost;
+    private synchronized void handleCostsMsg(HashMap<Integer, Integer> costMsg, NetworkNode sender) {
 
-            if (linkCost > 0) { // link exists
-                // notify route table that sender has contacted
-                routeTable.nodeHasContacted(sender);
+        // get link cost
+        Integer linkCost = links[nodeId][sender.getNodeId()].cost;
 
-                // iterate over msg and check new routes
-                Iterator<Integer> nodesIterator = costMsg.keySet().iterator();
-                while (nodesIterator.hasNext()) {
-                    // get node id
-                    Integer nodeId = nodesIterator.next();
-                    if (nodeId != NetworkNode.this.nodeId) {
+        // notify route table that sender has contacted
+        routeTable.nodeHasContacted(sender);
 
-                        // get cost advertised by the sender
-                        Integer advertisedCostToNode = costMsg.get(nodeId);
+        // iterate over msg and check new routes
+        Iterator<Integer> nodesIterator = costMsg.keySet().iterator();
+        while (nodesIterator.hasNext()) {
+            // get node id
+            Integer destinationId = nodesIterator.next();
+            if (!destinationId.equals(this.nodeId)) {
 
-                        // calculate actual cost
-                        Integer actualCost = advertisedCostToNode + linkCost;
+                // get cost advertised by the sender
+                Integer advertisedCostToNode = costMsg.get(destinationId);
 
-                        // get current cost to said node
-                        Integer currCostToNode = routeTable.getCost(nodeId);
+                // calculate actual cost
+                Integer newCost = advertisedCostToNode + linkCost;
 
-                        RouteTable.RouteTableEntry routeTableEntry = routeTable.new RouteTableEntry(nodeId, actualCost, sender.getNodeId());
+                // get current cost to said node
+                Integer currCostToNode = routeTable.getCost(destinationId);
 
-                        // currCostToNOde !=null && !(advertisedCostToNode > currCostToNode)
-                        if (currCostToNode != null) {
-                            // entry exists
-                            if (actualCost < currCostToNode) {
-                                // update entry to reflect new cost and next_hop
-                                routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
-                            }
-                        } else {
-                            // must create new entry
-                            routeTable.addOrUpdateRouteTableEntry(routeTableEntry);
-                        }
+                if (newCost < currCostToNode) {
+                    routeTable.logDestCost(destinationId, newCost, sender);
+                } else if (newCost > currCostToNode) {
+                    Integer routeNextHopForDest = routeTable.getRouteNextHopForDest(destinationId);
+                    if (routeNextHopForDest != null && routeNextHopForDest.equals(sender.getNodeId())) {
+                        routeTable.logDestCost(destinationId, newCost, sender);
                     }
                 }
+
+//                // get current route entry if exists
+//                RouteTable.RouteTableEntry existingRouteEntryForDest = routeTable.getRouteEntryForDest(destinationId);
+//
+//                // create new route table entry
+//                RouteTable.RouteTableEntry newRouteEntryForDest = routeTable.new RouteTableEntry(destinationId, newCost, sender.getNodeId());
+//
+//                if (existingRouteEntryForDest == null) {
+//                    routeTable.addTableEntryForDest(newRouteEntryForDest);
+//                } else {
+//                    if (newRouteEntryForDest.isBetterThan(existingRouteEntryForDest)) {
+//                        routeTable.updateTableEntryForDest(newRouteEntryForDest);
+//                    } else if (newRouteEntryForDest.comesFromHost(sender.getNodeId()) && newRouteEntryForDest.isWorseThan(existingRouteEntryForDest)) {
+//                        routeTable.updateTableEntryForDest(newRouteEntryForDest);
+//                    }
+//                }
             }
         }
     }
+
 }
