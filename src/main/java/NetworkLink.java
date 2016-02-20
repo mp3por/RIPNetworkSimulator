@@ -3,18 +3,18 @@
  */
 public class NetworkLink {
     Integer cost;
-//    NetworkNode node1;
-//    NetworkNode node2;
+//    NetworkNode nodeId1;
+//    NetworkNode nodeId2;
 
 
     public NetworkLink(Integer cost) {
         this.cost = cost;
-//        this.node1 = node1;
-//        this.node2 = node2;
+//        this.nodeId1 = nodeId1;
+//        this.nodeId2 = nodeId2;
     }
 
     @Override
     public String toString() {
-        return "Link: cost{" + cost + "}";
+        return "Link:" + cost ;
     }
 }

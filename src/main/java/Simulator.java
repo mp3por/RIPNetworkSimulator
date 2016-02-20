@@ -15,13 +15,11 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
 
     private final Integer numOfIterations;
     private final HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents;
-    private final HashMap<Integer, ArrayList<Integer>> connectionsMap;
     private boolean isStable = false;
     private boolean untilStability;
 
     public Simulator(NetworkLink[][] links, HashMap<Integer, ArrayList<Integer>> connectionsMap, Integer numOfIterations, boolean untilStability, HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents) {
         this.links = links;
-        this.connectionsMap = connectionsMap;
         this.scheduledEvents = scheduledEvents;
         this.numOfIterations = numOfIterations != null ? numOfIterations : DEFAULT_NUM_OF_ITERATIONS;
         this.numOfNodes = this.links.length;
@@ -47,21 +45,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
             node.setNeighbours(neighboursMap);
         }
 
-        printNodes();
-
         startSimulation();
-
-    }
-
-    public void printNodes() {
-        StringBuilder b = new StringBuilder("nodes:\n");
-
-        for (NetworkNode networkNode : nodesMap.values()) {
-            b.append(networkNode + "\n");
-        }
-
-
-        System.out.println( b.toString());
     }
 
     private void startSimulation() {
@@ -104,16 +88,17 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
                 event.executeEvent();
             }
             printCosts();
+            printNodes();
         }
     }
 
     private void simulateNetworkExchange() {
+        System.out.println("simulate network exchange start");
         isStable = true;
         for (NetworkNode node : nodesMap.values()) {
-            if (node.isActive()) {
-                node.sendCostsToNeighbours();
-            }
+            node.sendCostsToNeighbours();
         }
+        System.out.println("simulate network exchange finish");
     }
 
     public void printCosts() {
@@ -140,6 +125,15 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
                 b.append("]");
             }
             b.append("\n");
+        }
+        System.out.println(b.toString());
+    }
+
+    public void printNodes() {
+        StringBuilder b = new StringBuilder("nodes:\n");
+
+        for (NetworkNode networkNode : nodesMap.values()) {
+            b.append(networkNode + "\n");
         }
         System.out.println(b.toString());
     }

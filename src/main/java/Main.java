@@ -73,7 +73,7 @@ public class Main {
             Integer changeAfterExchange = Integer.valueOf(inputLineValues[2]);
             Integer newCost = Integer.valueOf(inputLineValues[3]);
             NetworkLink networkLink = links[fromNodeId][toNodeId];
-            LinkCostChangeNetworkEvent event = new LinkCostChangeNetworkEvent(changeAfterExchange, networkLink, newCost);
+            LinkCostChangeNetworkEvent event = new LinkCostChangeNetworkEvent(changeAfterExchange, networkLink, newCost, fromNodeId, toNodeId);
             HashSet<ScheduledNetworkEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
             if (scheduledNetworkEvents == null) {
                 scheduledNetworkEvents = new HashSet<ScheduledNetworkEvent>();

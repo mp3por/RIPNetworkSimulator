@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -61,7 +62,7 @@ public class NetworkNode {
      * @return tuples (destId, routeTableEntry)
      */
     public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising() {
-        routeTable.reduceAllForgetCounters();
+//        routeTable.reduceAllForgetCounters();
         return routeTable.getCosts();
     }
 
@@ -87,9 +88,44 @@ public class NetworkNode {
      * Method to be called by the simulator to tell the node to send routing table to neighbours
      */
     public void sendCostsToNeighbours() {
+        // check for broken links and update table/neighbours
+        checkLinksAndRemoveDisconnectedNeighbours();
+
+
+        // "call-out" to all neighbours
         for (NetworkNode neighbourNode : neighbours.keySet()) {
             neighbourNode.handleCostsMsg(this);
         }
+    }
+
+    private void checkLinksAndRemoveDisconnectedNeighbours() {
+        System.out.println("checking links");
+        HashSet<NetworkNode> noLongerNeighbours = new HashSet<NetworkNode>();
+        for (NetworkNode neighbourNode : neighbours.keySet()) {
+            NetworkLink networkLink = neighbours.get(neighbourNode);
+            if (networkLink == null || networkLink.cost < 0) {
+                noLongerNeighbours.add(neighbourNode);
+            }
+        }
+        removeNodesFromNeighbours(noLongerNeighbours);
+        System.out.println("check end");
+        System.out.println(routeTable.toString());
+    }
+
+    private void removeNodesFromNeighbours(HashSet<NetworkNode> nodes) {
+        System.out.println("removing routes");
+        for (NetworkNode node : nodes) {
+            removeNodeFromNeighbours(node);
+        }
+    }
+
+    private void removeNodeFromNeighbours(NetworkNode node) {
+        System.out.println("\t" + nodeId + " removing " + node.getNodeId() + " from neighbours");
+        // remove from neighbours
+        neighbours.remove(node);
+
+        // remove route table entry for the destination since you now do not know how to get to there
+        routeTable.removeNeighbour(node.getNodeId());
     }
 
     /**
@@ -98,21 +134,23 @@ public class NetworkNode {
      * @param sender the node that initiated the
      */
     private synchronized void handleCostsMsg(NetworkNode sender) {
-
-        // get senders routes
-        HashMap<Integer, RouteTable.RouteTableEntry> sendersRoutes = sender.getRoutesForAdvertising();
-
         // notify route table that sender has contacted
-        routeTable.nodeHasContacted(sender);
+//        routeTable.nodeHasContacted(sender);
+//        System.out.println(sender.nodeId + " sent routes to " + nodeId);
+//        printNeighbours();
 
         // get link cost
-//        Integer linkCost = links[nodeId][sender.getNodeId()].cost;
+
         Integer linkCost = neighbours.get(sender).cost;
+//        System.out.println("\tget linkCost between " + nodeId + " and " + sender.getNodeId() + " = " + linkCost);
 
         if (linkCost.equals(-1)) {// link is down
-            // remove from neighbours as per assignment
-            neighbours.remove(sender);
+            // remove from neighbours
+            removeNodeFromNeighbours(sender);
         } else {// link is up and running
+            // get routes
+            HashMap<Integer, RouteTable.RouteTableEntry> sendersRoutes = sender.getRoutesForAdvertising();
+
             // iterate over msg and check new routes
             Iterator<Integer> nodesIterator = sendersRoutes.keySet().iterator();
             while (nodesIterator.hasNext()) {
@@ -134,7 +172,7 @@ public class NetworkNode {
                         // log new cost and sender
                         routeTable.logDestCost(destinationId, newCost, sender);
                     } else if (newCost > currCostToNode) {
-                        // check for link cost change
+                        // check for link cost changei
                         Integer routeNextHopForDest = routeTable.getRouteNextHopForDest(destinationId);
                         if (routeNextHopForDest != null && routeNextHopForDest.equals(sender.getNodeId())) {
                             // save new cost even though it is bigger than the current cost because it was
@@ -146,6 +184,15 @@ public class NetworkNode {
                 }
             }
         }
+    }
+
+    private void printNeighbours() {
+        StringBuilder b = new StringBuilder("Neighbours for node (" + nodeId + "): [");
+        for (NetworkNode networkNode : neighbours.keySet()) {
+            b.append(networkNode.getNodeId() + " - " + neighbours.get(networkNode) + ", ");
+        }
+        b.append("]");
+        System.out.println("neighbours for node " + nodeId + " : " + b.toString());
     }
 
     @Override

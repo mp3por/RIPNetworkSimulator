@@ -1,9 +1,11 @@
 import java.util.*;
 
 public class RouteTable {
+
     public interface NetworkNodeRouteTableListener {
         void onRouteTableUpdate(Integer nodeId);
     }
+
     public static final Integer INFINITY_COST = 64;
     public static final Integer FORGET_AFTER_DEFAULT = 16;
     private final NetworkNodeRouteTableListener listener;
@@ -29,16 +31,6 @@ public class RouteTable {
         return INFINITY_COST;
     }
 
-    public void updateTableEntryForDest(RouteTableEntry entry) {
-        routeTable.put(entry.getDest(), entry);
-        listener.onRouteTableUpdate(nodeId);
-    }
-
-    public void addTableEntryForDest(RouteTableEntry entry) {
-        routeTable.put(entry.getDest(), entry);
-        listener.onRouteTableUpdate(nodeId);
-    }
-
     public HashMap<Integer, RouteTableEntry> getCosts() {
         HashMap<Integer, RouteTableEntry> costs = new HashMap<Integer, RouteTableEntry>(routeTable.size());
 
@@ -48,6 +40,80 @@ public class RouteTable {
             costs.put(routeTableEntryCopy.getDest(), routeTableEntryCopy);
         }
         return costs;
+    }
+
+    public void linkForDestFailed(Integer nodeId) {
+        RouteTableEntry entry = routeTable.get(nodeId);
+        if (entry != null) {
+            entry.cost = INFINITY_COST;
+            entry.nextNodeId = null;
+        }
+    }
+
+    public void removeNeighbour(Integer nodeId) {
+        removeEntryForDest(nodeId);
+        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
+        for (RouteTableEntry entry : getEntriesWithoutSelf()) {
+            if (entry.getNextHop().equals(nodeId)) {
+                toBeRemoved.add(entry);
+            }
+        }
+        removeEntries(toBeRemoved);
+    }
+
+    private HashSet<RouteTableEntry> getEntriesWithoutSelf() {
+        HashSet<RouteTableEntry> entries = new HashSet<RouteTableEntry>();
+        for (RouteTableEntry entry : routeTable.values()) {
+            if (!entry.getDest().equals(nodeId)) {
+                entries.add(entry);
+            }
+        }
+        return entries;
+    }
+
+    private void removeEntries(HashSet<RouteTableEntry> toBeRemoved) {
+        for (RouteTableEntry entry : toBeRemoved) {
+            System.out.println("removing entry: " + entry);
+            routeTable.remove(entry.getDest());
+        }
+    }
+
+    private void removeEntryForDest(Integer nodeId) {
+        routeTable.remove(nodeId);
+    }
+
+//    public void reduceAllForgetCounters() {
+//        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
+//        for (RouteTableEntry entry : routeTable.values()) {
+//            entry.reduceForgetCounter();
+//            if (entry.shouldForget()) {
+//                toBeRemoved.add(entry);
+//            }
+//        }
+//        for (RouteTableEntry entry : toBeRemoved) {
+//            routeTable.remove(entry);
+//        }
+//    }
+
+//    public void nodeHasContacted(NetworkNode sender) {
+//        RouteTableEntry routeTableEntry = routeTable.get(sender.getNodeId());
+//        if (routeTableEntry != null) {
+//            routeTableEntry.resetForgetCounter();
+//        }
+//    }
+
+    public void logDestCost(Integer destinationId, Integer newCost, NetworkNode sender) {
+        RouteTableEntry entry = new RouteTableEntry(destinationId, newCost, sender.getNodeId());
+        routeTable.put(destinationId, entry);
+        listener.onRouteTableUpdate(nodeId);
+    }
+
+    public Integer getRouteNextHopForDest(Integer destinationId) {
+        RouteTableEntry entry = routeTable.get(destinationId);
+        if (entry != null) {
+            return entry.nextNodeId;
+        }
+        return null;
     }
 
     @Override
@@ -64,48 +130,6 @@ public class RouteTable {
         }
 
         return b.toString();
-    }
-
-    public void reduceAllForgetCounters() {
-        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
-        for (RouteTableEntry entry : routeTable.values()) {
-            entry.reduceForgetCounter();
-            if (entry.shouldForget()) {
-                toBeRemoved.add(entry);
-            }
-        }
-        for (RouteTableEntry entry : toBeRemoved) {
-            routeTable.remove(entry);
-        }
-    }
-
-    public void nodeHasContacted(NetworkNode sender) {
-        RouteTableEntry routeTableEntry = routeTable.get(sender.getNodeId());
-        if (routeTableEntry != null) {
-            routeTableEntry.resetForgetCounter();
-        }
-    }
-
-    public RouteTableEntry getRouteEntryForDest(Integer nodeId) {
-        return routeTable.get(nodeId);
-    }
-
-    public void logDestCost(Integer destinationId, Integer newCost, NetworkNode sender) {
-        RouteTableEntry entry = new RouteTableEntry(destinationId, newCost, sender.getNodeId());
-        routeTable.put(destinationId, entry);
-        listener.onRouteTableUpdate(nodeId);
-    }
-
-    public Integer getRouteNextHopForDest(Integer destinationId) {
-        RouteTableEntry entry = routeTable.get(destinationId);
-        if (entry != null) {
-            return entry.nextNodeId;
-        }
-        return null;
-    }
-
-    public Collection<RouteTableEntry> getEntries() {
-        return routeTable.values();
     }
 
     public class RouteTableEntry {
