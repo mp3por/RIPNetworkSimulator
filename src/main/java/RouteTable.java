@@ -73,7 +73,6 @@ public class RouteTable {
 
     private void removeEntries(HashSet<RouteTableEntry> toBeRemoved) {
         for (RouteTableEntry entry : toBeRemoved) {
-            System.out.println("removing entry: " + entry);
             routeTable.remove(entry.getDest());
         }
     }

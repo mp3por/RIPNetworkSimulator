@@ -99,7 +99,6 @@ public class NetworkNode {
     }
 
     private void checkLinksAndRemoveDisconnectedNeighbours() {
-        System.out.println("checking links");
         HashSet<NetworkNode> noLongerNeighbours = new HashSet<NetworkNode>();
         for (NetworkNode neighbourNode : neighbours.keySet()) {
             NetworkLink networkLink = neighbours.get(neighbourNode);
@@ -108,19 +107,15 @@ public class NetworkNode {
             }
         }
         removeNodesFromNeighbours(noLongerNeighbours);
-        System.out.println("check end");
-        System.out.println(routeTable.toString());
     }
 
     private void removeNodesFromNeighbours(HashSet<NetworkNode> nodes) {
-        System.out.println("removing routes");
         for (NetworkNode node : nodes) {
             removeNodeFromNeighbours(node);
         }
     }
 
     private void removeNodeFromNeighbours(NetworkNode node) {
-        System.out.println("\t" + nodeId + " removing " + node.getNodeId() + " from neighbours");
         // remove from neighbours
         neighbours.remove(node);
 
