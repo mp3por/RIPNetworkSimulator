@@ -12,3 +12,7 @@ fromNodeId toNodeId linkCost
 link change config
 fromNodeId toNodeId changeCostAfterExchange newCost
     0         1                 5             10
+
+show best route
+fromNodeId toNodeId showAfterExchange
+    0         1            10

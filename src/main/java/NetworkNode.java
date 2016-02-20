@@ -190,6 +190,10 @@ public class NetworkNode {
         System.out.println("neighbours for node " + nodeId + " : " + b.toString());
     }
 
+    public void addNeighbour(NetworkNode connectedNode, NetworkLink networkLink) {
+        neighbours.put(connectedNode,networkLink);
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("NetworkNode " + nodeId + ":\n");

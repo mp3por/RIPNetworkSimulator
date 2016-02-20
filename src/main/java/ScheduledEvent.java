@@ -1,10 +1,10 @@
 /**
  * Created by velin.
  */
-public abstract class ScheduledNetworkEvent {
+public abstract class ScheduledEvent {
     protected final Integer afterExchange;
 
-    public ScheduledNetworkEvent(Integer afterExchange) {
+    public ScheduledEvent(Integer afterExchange) {
         this.afterExchange = afterExchange;
     }
 
