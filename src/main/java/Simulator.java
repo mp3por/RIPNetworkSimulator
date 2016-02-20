@@ -30,7 +30,7 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
 
         // instantiate nodes
         for (int i = 0; i < numOfNodes; i++) {
-            NetworkNode node = new NetworkNode(i, this, NetworkNode.STATUS.ACTIVE);
+            NetworkNode node = new NetworkNode(i, this);
             nodesMap.put(i, node);
         }
 

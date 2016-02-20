@@ -10,50 +10,97 @@ public class NetworkNode {
         void onRouteTableUpdate(Integer nodeId);
     }
 
+    /**
+     * Node status
+     */
     enum STATUS {
         ACTIVE, FAILED
     }
 
+    /**
+     * Node Id
+     */
     protected final Integer nodeId;
+
+    /**
+     * Node routing table
+     */
     private final RouteTable routeTable;
 
+    /**
+     * Node neighbours
+     */
     private HashMap<NetworkNode, NetworkLink> neighbours;
+
+    /**
+     * Node current status
+     */
     private STATUS status;
 
-    public NetworkNode(int nodeId, NetworkNodeRouteTableListener listener, STATUS status) {
+    /**
+     * Constructor
+     *
+     * @param nodeId   node id
+     * @param listener listener for routing table changes
+     */
+    public NetworkNode(int nodeId, NetworkNodeRouteTableListener listener) {
         this.nodeId = nodeId;
         this.routeTable = new RouteTable(nodeId, listener);
-        this.status = status;
+        this.status = STATUS.ACTIVE;
         this.neighbours = new HashMap<NetworkNode, NetworkLink>();
     }
 
+    /**
+     * Setter for neighbours
+     *
+     * @param neighbours the neighbours
+     */
     public void setNeighbours(HashMap<NetworkNode, NetworkLink> neighbours) {
         this.neighbours = neighbours;
     }
 
+    /**
+     * Method for extracting routes from the routing table
+     *
+     * @return tuples (destId, routeTableEntry)
+     */
     public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising() {
         routeTable.reduceAllForgetCounters();
         return routeTable.getCosts();
     }
-
-    public void receiveCostsMsgFrom(NetworkNode sender) {
-        handleCostsMsg(sender);
-    }
-
+    
+    /**
+     * Getter for node Id
+     *
+     * @return this node id
+     */
     public Integer getNodeId() {
         return nodeId;
     }
 
+    /**
+     * Is node active check
+     *
+     * @return true if node is active, false otherwise
+     */
     public boolean isActive() {
         return status.equals(STATUS.ACTIVE);
     }
 
+    /**
+     * Method to be called by the simulator to tell the node to send routing table to neighbours
+     */
     public void sendCostsToNeighbours() {
         for (NetworkNode neighbourNode : neighbours.keySet()) {
-            neighbourNode.receiveCostsMsgFrom(this);
+            neighbourNode.handleCostsMsg(this);
         }
     }
 
+    /**
+     * Method to be called by a neighbour node which is sending you it's routing table
+     *
+     * @param sender the node that initiated the
+     */
     private synchronized void handleCostsMsg(NetworkNode sender) {
 
         // get senders routes
