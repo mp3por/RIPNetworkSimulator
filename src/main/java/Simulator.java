@@ -6,7 +6,7 @@ import java.util.*;
 /**
  * Created by velin.
  */
-public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
+public class Simulator implements RouteTable.NetworkNodeRouteTableListener, ShowBestRouteEvent.ShowBestRouteCapable {
     public static final Integer DEFAULT_NUM_OF_ITERATIONS = 100;
 
     private final NetworkLink[][] links;
@@ -189,7 +189,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
             Integer changeAfterExchange = Integer.valueOf(inputLineValues[2]);
             Integer newCost = Integer.valueOf(inputLineValues[3]);
             NetworkLink networkLink = links[fromNodeId][toNodeId];
-            LinkCostChangeEvent event = new LinkCostChangeEvent(changeAfterExchange, networkLink, newCost, fromNodeId, toNodeId);
+            LinkCostChangeEvent event = new LinkCostChangeEvent(changeAfterExchange, networkLink, newCost, nodesMap.get(fromNodeId), nodesMap.get(toNodeId));
             HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
             if (scheduledNetworkEvents == null) {
                 scheduledNetworkEvents = new HashSet<ScheduledEvent>();
@@ -209,8 +209,13 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
             Integer fromNodeId = Integer.valueOf(inputLineValues[0]);
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer showAfterExchange = Integer.valueOf(inputLineValues[2]);
-
-
+            ShowBestRouteEvent event = new ShowBestRouteEvent(showAfterExchange, nodesMap.get(fromNodeId), nodesMap.get(toNodeId), this);
+            HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(showAfterExchange);
+            if (scheduledNetworkEvents == null) {
+                scheduledNetworkEvents = new HashSet<ScheduledEvent>();
+                scheduledEvents.put(showAfterExchange, scheduledNetworkEvents);
+            }
+            scheduledNetworkEvents.add(event);
         }
 
         // look maxIterations flag
@@ -225,6 +230,26 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener {
         int untilStabilityIndex = configValues.indexOf("-untilStability");
         if (untilStabilityIndex != -1) {
             untilStability = Boolean.valueOf(configValues.get(untilStabilityIndex + 1));
+        }
+    }
+
+
+    public ArrayList<NetworkNode> findBestRoute(NetworkNode fromNode, NetworkNode toNode, ArrayList<NetworkNode> currPath) {
+        if (fromNode.getNodeId().equals(toNode.getNodeId())) {
+            return null;
+        } else if (fromNode.isNodeNeighbour(toNode)) {
+//            currPath.add(toNode);
+            return currPath;
+        } else {
+            Integer nextNodeInPathId = fromNode.getNextHopToDest(toNode);
+            if (nextNodeInPathId != null) {
+                NetworkNode nextNodeInPath = nodesMap.get(nextNodeInPathId);
+                currPath.add(nextNodeInPath);
+                return findBestRoute(nextNodeInPath, toNode, currPath);
+            } else {
+                currPath.add(null);
+                return currPath;
+            }
         }
     }
 }

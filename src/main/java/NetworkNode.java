@@ -194,6 +194,14 @@ public class NetworkNode {
         neighbours.put(connectedNode,networkLink);
     }
 
+    public boolean isNodeNeighbour(NetworkNode toNode) {
+        return neighbours.keySet().contains(toNode);
+    }
+
+    public Integer getNextHopToDest(NetworkNode toNode) {
+        return routeTable.getNextHopTowardsDest(toNode);
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("NetworkNode " + nodeId + ":\n");

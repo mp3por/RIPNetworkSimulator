@@ -4,10 +4,10 @@
 public class LinkCostChangeEvent extends ScheduledEvent {
     protected final Integer newCost;
     protected final NetworkLink link;
-    protected final Integer nodeId1;
-    protected final Integer nodeId2;
+    protected final NetworkNode nodeId1;
+    protected final NetworkNode nodeId2;
 
-    public LinkCostChangeEvent(Integer afterExchange, NetworkLink networkLink, Integer newCost, Integer node1Id, Integer node2Id) {
+    public LinkCostChangeEvent(Integer afterExchange, NetworkLink networkLink, Integer newCost, NetworkNode node1Id, NetworkNode node2Id) {
         super(afterExchange);
         this.newCost = newCost;
         this.link = networkLink;

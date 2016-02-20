@@ -115,6 +115,14 @@ public class RouteTable {
         return null;
     }
 
+    public Integer getNextHopTowardsDest(NetworkNode toNode) {
+        RouteTableEntry entry = routeTable.get(toNode.getNodeId());
+        if (entry != null) {
+            return entry.getNextHop();
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("RouteTable for node : " + nodeId + "\n");
