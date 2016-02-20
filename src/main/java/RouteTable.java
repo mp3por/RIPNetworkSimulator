@@ -1,7 +1,4 @@
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class RouteTable {
     public static final Integer INFINITY_COST = 64;
@@ -39,15 +36,13 @@ public class RouteTable {
         listener.onRouteTableUpdate(nodeId);
     }
 
-    public HashMap<Integer, Integer> getCosts() {
-        HashMap<Integer, Integer> costs = new HashMap<Integer, Integer>(routeTable.size());
+    public HashMap<Integer, RouteTableEntry> getCosts() {
+        HashMap<Integer, RouteTableEntry> costs = new HashMap<Integer, RouteTableEntry>(routeTable.size());
 
         Iterator<Integer> routeIterator = routeTable.keySet().iterator();
         while (routeIterator.hasNext()) {
-            RouteTableEntry routeTableEntry = routeTable.get(routeIterator.next());
-            Integer cost = routeTableEntry.getCost();
-            Integer dest = routeTableEntry.getDest();
-            costs.put(dest, cost);
+            RouteTableEntry routeTableEntryCopy = routeTable.get(routeIterator.next()).copy();
+            costs.put(routeTableEntryCopy.getDest(), routeTableEntryCopy);
         }
         return costs;
     }
@@ -100,10 +95,14 @@ public class RouteTable {
 
     public Integer getRouteNextHopForDest(Integer destinationId) {
         RouteTableEntry entry = routeTable.get(destinationId);
-        if (entry != null){
+        if (entry != null) {
             return entry.nextNodeId;
         }
         return null;
+    }
+
+    public Collection<RouteTableEntry> getEntries() {
+        return routeTable.values();
     }
 
     public class RouteTableEntry {
@@ -148,17 +147,21 @@ public class RouteTable {
             return nextNodeId.equals(senderId);
         }
 
-        public boolean isWorseThan(RouteTableEntry entry) {
-            return cost > entry.cost;
+        public boolean isWorseThan(RouteTableEntry entry, Integer linkCost) {
+            return cost > entry.cost + linkCost;
         }
 
-        public boolean isBetterThan(RouteTableEntry entry) {
-            return cost < entry.cost;
+        public boolean isBetterThan(RouteTableEntry entry, Integer linkCost) {
+            return cost < entry.cost + linkCost;
         }
 
         @Override
         public String toString() {
             return "RouteEntry{" + destNodeId + ", " + cost + ", " + nextNodeId + "}";
+        }
+
+        public RouteTableEntry copy() {
+            return new RouteTableEntry(this.destNodeId, this.cost, this.nextNodeId);
         }
     }
 

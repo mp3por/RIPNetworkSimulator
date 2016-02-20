@@ -10,50 +10,58 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
 
     private final NetworkLink[][] links;
     private final int numOfNodes;
-    private final ArrayList<NetworkNode> nodes;
+
+    private final HashMap<Integer, NetworkNode> nodesMap;
+
     private final Integer numOfIterations;
-    private final HashMap<NetworkNode, HashSet<NetworkNode>> nodeConnectionsMap;
     private final HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents;
-    private boolean isStable;
+    private final HashMap<Integer, ArrayList<Integer>> connectionsMap;
+    private boolean isStable = false;
     private boolean untilStability;
 
-    public Simulator(NetworkLink[][] links, Integer numOfIterations, boolean untilStability, HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents) {
+    public Simulator(NetworkLink[][] links, HashMap<Integer, ArrayList<Integer>> connectionsMap, Integer numOfIterations, boolean untilStability, HashMap<Integer, HashSet<ScheduledNetworkEvent>> scheduledEvents) {
         this.links = links;
+        this.connectionsMap = connectionsMap;
         this.scheduledEvents = scheduledEvents;
         this.numOfIterations = numOfIterations != null ? numOfIterations : DEFAULT_NUM_OF_ITERATIONS;
         this.numOfNodes = this.links.length;
-        this.nodes = new ArrayList<NetworkNode>(numOfNodes);
-        this.nodeConnectionsMap = new HashMap<NetworkNode, HashSet<NetworkNode>>();
-        this.isStable = false;
         this.untilStability = untilStability;
+        this.nodesMap = new HashMap<Integer, NetworkNode>(numOfNodes);
 
+        // instantiate nodes
         for (int i = 0; i < numOfNodes; i++) {
-            nodes.add(new NetworkNode(i, links, this, NetworkNode.STATUS.ACTIVE));
+            NetworkNode node = new NetworkNode(i, this, NetworkNode.STATUS.ACTIVE);
+            nodesMap.put(i, node);
         }
 
-        for (int i = 0; i < numOfNodes; i++) {
-            NetworkNode networkNode = nodes.get(i);
-            HashSet<NetworkNode> connections = new HashSet<NetworkNode>();
-            for (int y = 0; y < numOfNodes; y++) {
-                if (links[i][y].cost > 0) {
-                    NetworkNode connectedNode = nodes.get(y);
-                    connections.add(connectedNode);
-                }
+        // set neighbours
+        for (Integer nodeId : connectionsMap.keySet()) {
+            NetworkNode node = nodesMap.get(nodeId);
+            ArrayList<Integer> nodeConnectedNodesIDes = connectionsMap.get(nodeId);
+            HashMap<NetworkNode, NetworkLink> neighboursMap = new HashMap<NetworkNode, NetworkLink>();
+            for (Integer connectedNodeId : nodeConnectedNodesIDes) {
+                NetworkNode neighbourNode = nodesMap.get(connectedNodeId);
+                NetworkLink networkLink = links[node.getNodeId()][neighbourNode.getNodeId()];
+                neighboursMap.put(neighbourNode, networkLink);
             }
-            nodeConnectionsMap.put(networkNode, connections);
+            node.setNeighbours(neighboursMap);
         }
+
+        printNodes();
 
         startSimulation();
 
     }
 
-    public String printNodes() {
-        StringBuilder b = new StringBuilder("nodes:");
+    public void printNodes() {
+        StringBuilder b = new StringBuilder("nodes:\n");
 
-        for (int i = 0; i < numOfNodes; i++) {
-            b.append(nodes.get(i).nodeId + ", ");
+        for (NetworkNode networkNode : nodesMap.values()) {
+            b.append(networkNode + "\n");
         }
-        return b.toString();
+
+
+        System.out.println( b.toString());
     }
 
     private void startSimulation() {
@@ -67,8 +75,8 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
 
             simulateNetworkExchange();
             if (isStable) {
-                if (untilStability){
-                    System.out.println("Stability reached after iteration: " + currIteration);
+                if (untilStability) {
+                    System.out.println("Stability reached after iteration: " + (currIteration - 1));
                     break;
                 } else {
                     System.out.println();
@@ -86,8 +94,6 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
             System.out.println();
             System.out.println();
         }
-
-
     }
 
     private void simulateNetworkEvents(int currIteration) {
@@ -103,15 +109,9 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
 
     private void simulateNetworkExchange() {
         isStable = true;
-        for (NetworkNode node : nodes) {
+        for (NetworkNode node : nodesMap.values()) {
             if (node.isActive()) {
-                HashMap<Integer, Integer> nodeCostsMsg = node.getCostsMsg();
-                HashSet<NetworkNode> nodeConnections = nodeConnectionsMap.get(node);
-                for (NetworkNode connectedNode : nodeConnections) {
-                    if (links[node.getNodeId()][connectedNode.getNodeId()].cost >= 0) {
-                        connectedNode.receiveCostsMsg(nodeCostsMsg, node);
-                    }
-                }
+                node.sendCostsToNeighbours();
             }
         }
     }
@@ -146,7 +146,7 @@ public class Simulator implements NetworkNode.NetworkNodeRouteTableListener {
 
     public void printStateOfNodes() {
         StringBuilder b = new StringBuilder("State of nodes:\n");
-        for (NetworkNode node : nodes) {
+        for (NetworkNode node : nodesMap.values()) {
             b.append(node.toString());
         }
         System.out.println(b.toString());

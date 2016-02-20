@@ -33,6 +33,7 @@ public class Main {
         }
 
         // parse connections
+        HashMap<Integer, ArrayList<Integer>> connections = new HashMap<Integer, ArrayList<Integer>>();
         for (; inputLinesIndex < inputLines.length; inputLinesIndex++) {
             String inputLine = inputLines[inputLinesIndex];
             if (inputLine.contains("##")) {
@@ -42,10 +43,20 @@ public class Main {
             Integer fromNodeId = Integer.valueOf(inputLineValues[0]);
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer linkCost = Integer.valueOf(inputLineValues[2]);
-//            links[fromNodeId][toNodeId] = linkCost;
-//            links[toNodeId][fromNodeId] = linkCost;
-
             links[fromNodeId][toNodeId].cost = linkCost;
+            ArrayList<Integer> fromNodeConnections = connections.get(fromNodeId);
+            if (fromNodeConnections == null) {
+                fromNodeConnections = new ArrayList<Integer>();
+                connections.put(fromNodeId, fromNodeConnections);
+            }
+            fromNodeConnections.add(toNodeId);
+
+            ArrayList<Integer> toNodeConnections = connections.get(toNodeId);
+            if (toNodeConnections == null) {
+                toNodeConnections = new ArrayList<Integer>();
+                connections.put(toNodeId, toNodeConnections);
+            }
+            toNodeConnections.add(fromNodeId);
         }
         inputLinesIndex++; // move to next line
 
@@ -86,7 +97,7 @@ public class Main {
         }
 
 
-        Simulator simulator = new Simulator(links, numOfIterations, untilStability, scheduledEvents);
+        Simulator simulator = new Simulator(links, connections, numOfIterations, untilStability, scheduledEvents);
     }
 
 }
