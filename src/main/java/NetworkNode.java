@@ -8,6 +8,11 @@ import java.util.Iterator;
 public class NetworkNode {
 
     /**
+     * split horizon flag
+     */
+    private boolean splitHorizon;
+
+    /**
      * Node status
      */
     enum STATUS {
@@ -59,11 +64,32 @@ public class NetworkNode {
     /**
      * Method for extracting routes from the routing table
      *
+     * @param requester the requester of the routes
      * @return tuples (destId, routeTableEntry)
      */
-    public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising() {
+    public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising(NetworkNode requester) {
 //        routeTable.reduceAllForgetCounters();
-        return routeTable.getCosts();
+        HashMap<Integer, RouteTable.RouteTableEntry> costs = routeTable.getCosts();
+        if (splitHorizon) {
+            Iterator<Integer> routesIterator = costs.keySet().iterator();
+            while (routesIterator.hasNext()) {
+                Integer destId = routesIterator.next();
+                RouteTable.RouteTableEntry entry = costs.get(destId);
+                Integer nextHop = entry.getNextHop();
+                if (nextHop!= null && nextHop.equals(requester.getNodeId())) {
+                    routesIterator.remove();
+                }
+            }
+            System.out.println("splitHorizon is on. Routes advertised from " + nodeId + " to " + requester.getNodeId());
+            for (RouteTable.RouteTableEntry entry : costs.values()) {
+                System.out.println(entry);
+            }
+
+            return costs;
+        } else {
+            return costs;
+        }
+
     }
 
     /**
@@ -144,7 +170,7 @@ public class NetworkNode {
             removeNodeFromNeighbours(sender);
         } else {// link is up and running
             // get routes
-            HashMap<Integer, RouteTable.RouteTableEntry> sendersRoutes = sender.getRoutesForAdvertising();
+            HashMap<Integer, RouteTable.RouteTableEntry> sendersRoutes = sender.getRoutesForAdvertising(this);
 
             // iterate over msg and check new routes
             Iterator<Integer> nodesIterator = sendersRoutes.keySet().iterator();
@@ -191,7 +217,7 @@ public class NetworkNode {
     }
 
     public void addNeighbour(NetworkNode connectedNode, NetworkLink networkLink) {
-        neighbours.put(connectedNode,networkLink);
+        neighbours.put(connectedNode, networkLink);
     }
 
     public boolean isNodeNeighbour(NetworkNode toNode) {
@@ -200,6 +226,10 @@ public class NetworkNode {
 
     public Integer getNextHopToDest(NetworkNode toNode) {
         return routeTable.getNextHopTowardsDest(toNode);
+    }
+
+    public void setSplitHorizon(boolean splitHorizon) {
+        this.splitHorizon = splitHorizon;
     }
 
     @Override

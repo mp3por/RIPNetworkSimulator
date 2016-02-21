@@ -35,16 +35,16 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             } else {
                 System.out.println("Press enter to simulate next round or toggle split horizon");
                 userInputLine = userInput.nextLine();
-                if (userInput == null) {
+                if (userInputLine == null) {
                     break;
                 } else if (userInputLine.equals("")) {
                     // enter pressed
                     shouldContinue = simulateRound(currIteration);
-                } else if (userInput.equals("split-horizon-on")) {
+                } else if (userInputLine.equals("split-horizon-on")) {
                     // split horizon on request
                     splitHorizonOn();
                     shouldContinue = simulateRound(currIteration);
-                } else if (userInput.equals("split-horizon-off")) {
+                } else if (userInputLine.equals("split-horizon-off")) {
                     // split horizon off request
                     splitHorizonOff();
                     shouldContinue = simulateRound(currIteration);
@@ -62,10 +62,16 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
 
     private void splitHorizonOff() {
         System.out.println("split horizon on");
+        for (NetworkNode node : nodesMap.values()) {
+            node.setSplitHorizon(false);
+        }
     }
 
     private void splitHorizonOn() {
         System.out.println("split horizon off");
+        for (NetworkNode node : nodesMap.values()) {
+            node.setSplitHorizon(true);
+        }
     }
 
     public boolean simulateRound(int currIteration) {
