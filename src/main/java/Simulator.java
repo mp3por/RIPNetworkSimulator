@@ -16,6 +16,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
 
     private final Integer numOfIterations;
     private final HashMap<Integer, HashSet<ScheduledEvent>> scheduledEvents;
+    private final Boolean manual;
     private boolean isStable = false;
     private boolean untilStability;
 
@@ -25,31 +26,73 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         printStateOfNodes();
         printScheduledEvents();
 
+        Scanner userInput = new Scanner(System.in);
+        String userInputLine;
         for (int currIteration = 1; currIteration <= numOfIterations; currIteration++) {
-            System.out.println("--------------- Round " + currIteration + " -----------------");
-
-            simulateNetworkExchange();
-            System.out.println();
-            if (isStable) {
-                if (untilStability) {
-                    System.out.println("Stability reached after iteration: " + (currIteration - 1));
-                    break;
-                } else {
-                    System.out.println("Network stable for this round");
-                    System.out.println();
-//                    printStateOfNodes();
-                }
-
+            boolean shouldContinue;
+            if (!manual) {
+                shouldContinue = simulateRound(currIteration);
             } else {
-                System.out.println("There was a change(s). Nodes state after change(s):");
-                printStateOfNodes();
+                System.out.println("Press enter to simulate next round or toggle split horizon");
+                userInputLine = userInput.nextLine();
+                if (userInput == null) {
+                    break;
+                } else if (userInputLine.equals("")) {
+                    // enter pressed
+                    shouldContinue = simulateRound(currIteration);
+                } else if (userInput.equals("split-horizon-on")) {
+                    // split horizon on request
+                    splitHorizonOn();
+                    shouldContinue = simulateRound(currIteration);
+                } else if (userInput.equals("split-horizon-off")) {
+                    // split horizon off request
+                    splitHorizonOff();
+                    shouldContinue = simulateRound(currIteration);
+                } else {
+                    // unrecognized command
+                    System.out.println("Command not recognized.");
+                    shouldContinue = true;
+                }
             }
-            simulateNetworkEvents(currIteration);
-
-            System.out.println("--------------- End round " + currIteration + " -----------------------------------");
-            System.out.println();
-            System.out.println();
+            if (!shouldContinue) {
+                break;
+            }
         }
+    }
+
+    private void splitHorizonOff() {
+        System.out.println("split horizon on");
+    }
+
+    private void splitHorizonOn() {
+        System.out.println("split horizon off");
+    }
+
+    public boolean simulateRound(int currIteration) {
+        System.out.println("--------------- Round " + currIteration + " -----------------");
+
+        simulateNetworkExchange();
+        System.out.println();
+        if (isStable) {
+            if (untilStability) {
+                System.out.println("Stability reached after iteration: " + (currIteration - 1));
+                return false;
+            } else {
+                System.out.println("Network stable for this round");
+                System.out.println();
+//                    printStateOfNodes();
+            }
+
+        } else {
+            System.out.println("There was a change(s). Nodes state after change(s):");
+            printStateOfNodes();
+        }
+        simulateNetworkEvents(currIteration);
+
+        System.out.println("--------------- End round " + currIteration + " -----------------------------------");
+        System.out.println();
+        System.out.println();
+        return true;
     }
 
     private void simulateNetworkEvents(int currIteration) {
@@ -230,6 +273,16 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         if (untilStabilityIndex != -1) {
             untilStability = Boolean.valueOf(configValues.get(untilStabilityIndex + 1));
         }
+
+        // look for manual flag
+        int manualIndex = configValues.indexOf("-manual");
+        if (manualIndex != -1) {
+            manual = Boolean.valueOf(configValues.get(manualIndex + 1));
+        } else {
+            manual = false;
+        }
+
+        startSimulation();
     }
 
 

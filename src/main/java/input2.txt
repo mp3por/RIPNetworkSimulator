@@ -1,4 +1,4 @@
--numOfNodes 3 -maxIterations 10 -untilStability false
+-numOfNodes 3 -maxIterations 10 -untilStability false -manual true
 0 1 1
 1 2 1
 ## links changes
