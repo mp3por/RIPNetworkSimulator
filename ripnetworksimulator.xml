@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ripnetworksimulator" default="all">
+  
+  
+  <property file="ripnetworksimulator.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/packager.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.maven:_commons-io:commons-io:1.3.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-io/commons-io/1.3.2/commons-io-1.3.2.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module RIPNetworkSimulator -->
+  
+  <dirname property="module.ripnetworksimulator.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.ripnetworksimulator" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.ripnetworksimulator" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.ripnetworksimulator" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.ripnetworksimulator" value="-encoding UTF-8 -source 1.5 -target 1.5 ${compiler.args}"/>
+  
+  <property name="ripnetworksimulator.output.dir" value="${module.ripnetworksimulator.basedir}/target/classes"/>
+  <property name="ripnetworksimulator.testoutput.dir" value="${module.ripnetworksimulator.basedir}/target/test-classes"/>
+  
+  <path id="ripnetworksimulator.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="ripnetworksimulator.module.production.classpath">
+    <path refid="${module.jdk.classpath.ripnetworksimulator}"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.2.classpath"/>
+  </path>
+  
+  <path id="ripnetworksimulator.runtime.production.module.classpath">
+    <pathelement location="${ripnetworksimulator.output.dir}"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.2.classpath"/>
+  </path>
+  
+  <path id="ripnetworksimulator.module.classpath">
+    <path refid="${module.jdk.classpath.ripnetworksimulator}"/>
+    <pathelement location="${ripnetworksimulator.output.dir}"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.2.classpath"/>
+  </path>
+  
+  <path id="ripnetworksimulator.runtime.module.classpath">
+    <pathelement location="${ripnetworksimulator.testoutput.dir}"/>
+    <pathelement location="${ripnetworksimulator.output.dir}"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.2.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.ripnetworksimulator">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.ripnetworksimulator">
+    <patternset refid="excluded.from.module.ripnetworksimulator"/>
+  </patternset>
+  
+  <path id="ripnetworksimulator.module.sourcepath">
+    <dirset dir="${module.ripnetworksimulator.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="ripnetworksimulator.module.test.sourcepath">
+    <dirset dir="${module.ripnetworksimulator.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.ripnetworksimulator" depends="compile.module.ripnetworksimulator.production,compile.module.ripnetworksimulator.tests" description="Compile module RIPNetworkSimulator"/>
+  
+  <target name="compile.module.ripnetworksimulator.production" depends="register.custom.compilers" description="Compile module RIPNetworkSimulator; production classes">
+    <mkdir dir="${ripnetworksimulator.output.dir}"/>
+    <javac2 destdir="${ripnetworksimulator.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ripnetworksimulator}/javac">
+      <compilerarg line="${compiler.args.ripnetworksimulator}"/>
+      <bootclasspath refid="ripnetworksimulator.module.bootclasspath"/>
+      <classpath refid="ripnetworksimulator.module.production.classpath"/>
+      <src refid="ripnetworksimulator.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ripnetworksimulator"/>
+    </javac2>
+    
+    <copy todir="${ripnetworksimulator.output.dir}">
+      <fileset dir="${module.ripnetworksimulator.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.ripnetworksimulator.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.ripnetworksimulator.tests" depends="register.custom.compilers,compile.module.ripnetworksimulator.production" description="compile module RIPNetworkSimulator; test classes" unless="skip.tests">
+    <mkdir dir="${ripnetworksimulator.testoutput.dir}"/>
+    <javac2 destdir="${ripnetworksimulator.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ripnetworksimulator}/javac">
+      <compilerarg line="${compiler.args.ripnetworksimulator}"/>
+      <bootclasspath refid="ripnetworksimulator.module.bootclasspath"/>
+      <classpath refid="ripnetworksimulator.module.classpath"/>
+      <src refid="ripnetworksimulator.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ripnetworksimulator"/>
+    </javac2>
+    
+    <copy todir="${ripnetworksimulator.testoutput.dir}">
+      <fileset dir="${module.ripnetworksimulator.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.ripnetworksimulator" description="cleanup module">
+    <delete dir="${ripnetworksimulator.output.dir}"/>
+    <delete dir="${ripnetworksimulator.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.ripnetworksimulator" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.ripnetworksimulator" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>

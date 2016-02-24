@@ -5,13 +5,13 @@ public class TraceRouteTableEvent extends ScheduledEvent {
 
     private final NetworkNode node;
 
-    public TraceRouteTableEvent(NetworkNode node, Integer iterationStartIndex, Integer iterationEndIndex) {
-        super(iterationStartIndex);
+    public TraceRouteTableEvent(NetworkNode node, Integer exchangeStartIndex, Integer exchangeEndIndex) {
+        super(exchangeStartIndex);
         this.node = node;
     }
 
     @Override
-    public void executeEvent(Integer currentIteration) {
+    public void executeEvent(Integer currentExchange) {
         System.out.println("TraceRouteEvent for node: " + node.getNodeId());
         node.printTable();
     }

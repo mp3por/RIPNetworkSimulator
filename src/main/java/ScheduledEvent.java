@@ -8,5 +8,5 @@ public abstract class ScheduledEvent {
         this.afterExchange = afterExchange;
     }
 
-    public abstract void executeEvent(Integer currentIteration);
+    public abstract void executeEvent(Integer currentExchange);
 }

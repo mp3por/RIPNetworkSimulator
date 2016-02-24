@@ -21,7 +21,7 @@ public class LinkCostChangeEvent extends ScheduledEvent {
     }
 
     @Override
-    public void executeEvent(Integer currentIteration) {
+    public void executeEvent(Integer currentExchange) {
         System.out.println("\tLinkCostChangeEvent, link between " + nodeId1.getNodeId() + " and " + nodeId2.getNodeId() + " from " + link.cost + " to " + newCost);
         link.cost = newCost;
     }
