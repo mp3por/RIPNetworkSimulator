@@ -69,9 +69,9 @@ public class NetworkNode {
      * @return tuples (destId, routeTableEntry)
      */
     public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising(NetworkNode requester) {
-        routeTable.reduceAllForgetCounters();
         HashMap<Integer, RouteTable.RouteTableEntry> costs = routeTable.getCosts();
         if (splitHorizon) {
+            // remove entries learned from the requester
             Iterator<Integer> routesIterator = costs.keySet().iterator();
             while (routesIterator.hasNext()) {
                 Integer destId = routesIterator.next();
@@ -81,11 +81,6 @@ public class NetworkNode {
                     routesIterator.remove();
                 }
             }
-            System.out.println("splitHorizon is on. Routes advertised from " + nodeId + " to " + requester.getNodeId());
-            for (RouteTable.RouteTableEntry entry : costs.values()) {
-                System.out.println(entry);
-            }
-
             return costs;
         } else {
             return costs;
@@ -118,6 +113,8 @@ public class NetworkNode {
         // check for broken links and update table/neighbours
         checkLinksAndRemoveDisconnectedNeighbours();
 
+        // remove old entries from table
+        routeTable.reduceAllForgetCounters();
 
         // "call-out" to all neighbours
         for (NetworkNode neighbourNode : neighbours.keySet()) {

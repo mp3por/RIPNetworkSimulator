@@ -95,7 +95,9 @@ public class RouteTable {
             }
         }
         for (RouteTableEntry entry : toBeRemoved) {
-            routeTable.remove(entry);
+            System.out.println(nodeId + " removing entry: " + entry);
+            listener.onRouteTableUpdate(nodeId);
+            routeTable.remove(entry.getDest());
         }
     }
 
@@ -159,7 +161,8 @@ public class RouteTable {
         }
 
         public void reduceForgetCounter() {
-            forgetCounter--;
+            if (!destNodeId.equals(nodeId))
+                forgetCounter--;
         }
 
         public void resetForgetCounter() {
