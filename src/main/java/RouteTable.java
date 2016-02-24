@@ -101,13 +101,6 @@ public class RouteTable {
         }
     }
 
-//    public void nodeHasContacted(NetworkNode sender) {
-//        RouteTableEntry routeTableEntry = routeTable.get(sender.getNodeId());
-//        if (routeTableEntry != null) {
-//            routeTableEntry.resetForgetCounter();
-//        }
-//    }
-
     public void logDestCost(Integer destinationId, Integer newCost, NetworkNode sender) {
         RouteTableEntry entry = new RouteTableEntry(destinationId, newCost, sender.getNodeId());
         routeTable.put(destinationId, entry);

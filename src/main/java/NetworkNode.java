@@ -230,6 +230,10 @@ public class NetworkNode {
         this.splitHorizon = splitHorizon;
     }
 
+    public void printTable() {
+        System.out.println(routeTable.toString());
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("NetworkNode " + nodeId + ":\n");

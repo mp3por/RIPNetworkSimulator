@@ -29,7 +29,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
 
         Scanner userInput = new Scanner(System.in);
         String userInputLine;
-        for (int currIteration = 1; currIteration <= numOfIterations; currIteration++) {
+        for (int currIteration = 0; currIteration <= numOfIterations; currIteration++) {
             boolean shouldContinue;
             if (!manual) {
                 shouldContinue = simulateRound(currIteration);
@@ -109,7 +109,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         if (scheduledEvents != null) {
             System.out.println("ScheduledEvents after exchange " + currIteration);
             for (ScheduledEvent event : scheduledEvents) {
-                event.executeEvent();
+                event.executeEvent(currIteration);
             }
         }
     }
@@ -302,6 +302,28 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
                 scheduledEvents.put(showAfterExchange, scheduledNetworkEvents);
             }
             scheduledNetworkEvents.add(event);
+        }
+        inputLinesIndex++;
+
+        // parse trace routing tables
+        for (; inputLinesIndex < inputLines.length; inputLinesIndex++) {
+            String inputLine = inputLines[inputLinesIndex];
+            if (inputLine.contains("##")) {
+                break;
+            }
+            String[] inputLineValues = inputLine.split(" ");
+            Integer nodeId = Integer.valueOf(inputLineValues[0]);
+            Integer iterationStartIndex = Integer.valueOf(inputLineValues[1]);
+            Integer iterationEndIndex = Integer.valueOf(inputLineValues[2]);
+            TraceRouteTableEvent event = new TraceRouteTableEvent(nodesMap.get(nodeId), iterationStartIndex, iterationEndIndex);
+            for (int i = iterationStartIndex; i < iterationEndIndex; i++) {
+                HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(i);
+                if (scheduledNetworkEvents == null) {
+                    scheduledNetworkEvents = new HashSet<ScheduledEvent>();
+                    scheduledEvents.put(i, scheduledNetworkEvents);
+                }
+                scheduledNetworkEvents.add(event);
+            }
         }
 
 
