@@ -17,8 +17,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     private final Integer numOfIterations;
     private final HashMap<Integer, HashSet<ScheduledEvent>> scheduledEvents;
     private final Boolean manual;
+    private boolean splitHorizon;
     private boolean isStable = false;
-    private boolean untilStability;
+    private final boolean untilStability;
 
     public void startSimulation() {
         System.out.println("Starting simulation");
@@ -62,15 +63,17 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
 
     private void splitHorizonOff() {
         System.out.println("split horizon on");
+        splitHorizon = false;
         for (NetworkNode node : nodesMap.values()) {
-            node.setSplitHorizon(false);
+            node.setSplitHorizon(splitHorizon);
         }
     }
 
     private void splitHorizonOn() {
         System.out.println("split horizon off");
+        splitHorizon = true;
         for (NetworkNode node : nodesMap.values()) {
-            node.setSplitHorizon(true);
+            node.setSplitHorizon(splitHorizon);
         }
     }
 
@@ -184,21 +187,56 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         }
         numOfNodes = Integer.valueOf(configValues.get(numOfNodesIndex + 1));
 
+        // look maxIterations flag
+        int maxIterationsIndex = configValues.indexOf("-maxIterations");
+        if (maxIterationsIndex != -1) {
+            numOfIterations = Integer.valueOf(configValues.get(maxIterationsIndex + 1));
+        } else {
+            numOfIterations = DEFAULT_NUM_OF_ITERATIONS;
+        }
+
+        // look for stability flag
+        int untilStabilityIndex = configValues.indexOf("-untilStability");
+        if (untilStabilityIndex != -1) {
+            untilStability = Boolean.valueOf(configValues.get(untilStabilityIndex + 1));
+        } else {
+            untilStability = false;
+        }
+
+        // look for manual flag
+        int manualIndex = configValues.indexOf("-manual");
+        if (manualIndex != -1) {
+            manual = Boolean.valueOf(configValues.get(manualIndex + 1));
+        } else {
+            manual = false;
+        }
+
+        // look for split horizon flag
+        int splitHorizonIndex = configValues.indexOf("-splitHorizon");
+        if (splitHorizonIndex != -1) {
+            splitHorizon = configValues.get(splitHorizonIndex + 1).equals("on");
+        } else {
+            splitHorizon = false;
+        }
+
+
         // instantiate nodes
         nodesMap = new HashMap<Integer, NetworkNode>();
         for (int i = 0; i < numOfNodes; i++) {
-            NetworkNode node = new NetworkNode(i, this);
+            NetworkNode node = new NetworkNode(i, this, splitHorizon);
             nodesMap.put(i, node);
         }
 
-        // instantiate links with default value -1 => not connected
+        // instantiate links with default value FAILED_LINK_COST = -1 => not connected
         links = new NetworkLink[numOfNodes][numOfNodes];
         for (int i = 0; i < numOfNodes; i++) {
             for (int y = i; y < numOfNodes; y++) {
                 if (i == y) {
+                    // distance to self = 0
                     links[i][y] = new NetworkLink(0);
                 } else {
-                    NetworkLink networkLink = new NetworkLink(-1);
+                    // distance to others set to FAILED_LINK_COST
+                    NetworkLink networkLink = new NetworkLink(RouteTable.FAILED_LINK_COST);
                     links[i][y] = networkLink;
                     links[y][i] = networkLink;
                 }
@@ -266,27 +304,6 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             scheduledNetworkEvents.add(event);
         }
 
-        // look maxIterations flag
-        int maxIterationsIndex = configValues.indexOf("-maxIterations");
-        if (maxIterationsIndex != -1) {
-            numOfIterations = Integer.valueOf(configValues.get(maxIterationsIndex + 1));
-        } else {
-            numOfIterations = DEFAULT_NUM_OF_ITERATIONS;
-        }
-
-        // look for stability flag
-        int untilStabilityIndex = configValues.indexOf("-untilStability");
-        if (untilStabilityIndex != -1) {
-            untilStability = Boolean.valueOf(configValues.get(untilStabilityIndex + 1));
-        }
-
-        // look for manual flag
-        int manualIndex = configValues.indexOf("-manual");
-        if (manualIndex != -1) {
-            manual = Boolean.valueOf(configValues.get(manualIndex + 1));
-        } else {
-            manual = false;
-        }
 
         startSimulation();
     }

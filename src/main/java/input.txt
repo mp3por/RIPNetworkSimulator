@@ -1,4 +1,4 @@
--numOfNodes 4 -maxIterations 10 -untilStability true -manual true
+-numOfNodes 4 -maxIterations 10 -untilStability true -manual true -splitHorizon on
 0 1 3
 0 3 7
 1 2 6

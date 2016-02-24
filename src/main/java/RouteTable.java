@@ -7,7 +7,8 @@ public class RouteTable {
     }
 
     public static final Integer INFINITY_COST = 64;
-    public static final Integer FORGET_AFTER_DEFAULT = 16;
+    public static final Integer FORGET_AFTER_DEFAULT = 4;
+    public static final Integer FAILED_LINK_COST = -1;
     private final NetworkNodeRouteTableListener listener;
 
 
@@ -26,6 +27,7 @@ public class RouteTable {
     public Integer getCost(Integer nodeId) {
         RouteTableEntry routeTableEntry = routeTable.get(nodeId);
         if (routeTableEntry != null) {
+            routeTableEntry.resetForgetCounter();
             return routeTableEntry.getCost();
         }
         return INFINITY_COST;
@@ -84,18 +86,18 @@ public class RouteTable {
         }
     }
 
-//    public void reduceAllForgetCounters() {
-//        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
-//        for (RouteTableEntry entry : routeTable.values()) {
-//            entry.reduceForgetCounter();
-//            if (entry.shouldForget()) {
-//                toBeRemoved.add(entry);
-//            }
-//        }
-//        for (RouteTableEntry entry : toBeRemoved) {
-//            routeTable.remove(entry);
-//        }
-//    }
+    public void reduceAllForgetCounters() {
+        HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
+        for (RouteTableEntry entry : routeTable.values()) {
+            entry.reduceForgetCounter();
+            if (entry.shouldForget()) {
+                toBeRemoved.add(entry);
+            }
+        }
+        for (RouteTableEntry entry : toBeRemoved) {
+            routeTable.remove(entry);
+        }
+    }
 
 //    public void nodeHasContacted(NetworkNode sender) {
 //        RouteTableEntry routeTableEntry = routeTable.get(sender.getNodeId());

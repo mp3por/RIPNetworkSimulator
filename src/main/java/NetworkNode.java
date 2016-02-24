@@ -45,11 +45,12 @@ public class NetworkNode {
      * @param nodeId   node id
      * @param listener listener for routing table changes
      */
-    public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener) {
+    public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener, boolean splitHorizon) {
         this.nodeId = nodeId;
         this.routeTable = new RouteTable(nodeId, listener);
         this.status = STATUS.ACTIVE;
         this.neighbours = new HashMap<NetworkNode, NetworkLink>();
+        this.splitHorizon = splitHorizon;
     }
 
     /**
@@ -68,7 +69,7 @@ public class NetworkNode {
      * @return tuples (destId, routeTableEntry)
      */
     public HashMap<Integer, RouteTable.RouteTableEntry> getRoutesForAdvertising(NetworkNode requester) {
-//        routeTable.reduceAllForgetCounters();
+        routeTable.reduceAllForgetCounters();
         HashMap<Integer, RouteTable.RouteTableEntry> costs = routeTable.getCosts();
         if (splitHorizon) {
             Iterator<Integer> routesIterator = costs.keySet().iterator();
@@ -76,7 +77,7 @@ public class NetworkNode {
                 Integer destId = routesIterator.next();
                 RouteTable.RouteTableEntry entry = costs.get(destId);
                 Integer nextHop = entry.getNextHop();
-                if (nextHop!= null && nextHop.equals(requester.getNodeId())) {
+                if (nextHop != null && nextHop.equals(requester.getNodeId())) {
                     routesIterator.remove();
                 }
             }
@@ -165,7 +166,7 @@ public class NetworkNode {
         Integer linkCost = neighbours.get(sender).cost;
 //        System.out.println("\tget linkCost between " + nodeId + " and " + sender.getNodeId() + " = " + linkCost);
 
-        if (linkCost.equals(-1)) {// link is down
+        if (linkCost.equals(RouteTable.FAILED_LINK_COST)) {// link is down
             // remove from neighbours
             removeNodeFromNeighbours(sender);
         } else {// link is up and running
