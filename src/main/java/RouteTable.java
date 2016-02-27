@@ -47,11 +47,12 @@ public class RouteTable {
     }
 
     public void removeNeighbour(Integer nodeId) {
-        System.out.println("Node " + this.nodeId + " remove neighbour " + nodeId);
-        removeEntryForDest(nodeId);
+        String msg = "Node " + this.nodeId + " remove neighbour " + nodeId;
+        removeEntryForDest(nodeId, msg);
         HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
         for (RouteTableEntry entry : getEntriesWithoutSelf()) {
             if (entry.getNextHop().equals(nodeId)) {
+                System.out.println("Node " + this.nodeId + " will remove entry because it came from neightbor " + nodeId + " : " + entry);
                 toBeRemoved.add(entry);
             }
         }
@@ -70,18 +71,19 @@ public class RouteTable {
 
     private void removeEntries(HashSet<RouteTableEntry> toBeRemoved) {
         if (toBeRemoved.size() > 0) {
-            System.out.println("Node " + nodeId + " remove entries");
             for (RouteTableEntry entry : toBeRemoved) {
-                System.out.println("Node " + nodeId + " removing timeout entry: " + entry);
-                routeTable.remove(entry.getDest());
+                removeEntryForDest(entry.getDest(), null);
             }
         }
     }
 
-    private void removeEntryForDest(Integer nodeId) {
+    private void removeEntryForDest(Integer nodeId, String reason) {
         RouteTableEntry removedEntry = routeTable.remove(nodeId);
         if (removedEntry != null) {
-            listener.onRouteTableUpdate(nodeId);
+            if (reason != null && !reason.equals("")) {
+                System.out.println(reason);
+            }
+            listener.onRouteTableUpdate(this.nodeId);
         }
     }
 
@@ -127,9 +129,11 @@ public class RouteTable {
     public void dropRoute(Integer destinationId) {
         RouteTableEntry entry = routeTable.get(destinationId);
         if (entry != null) {
-            System.out.println("Node " + nodeId + " dropping route for dest (" + destinationId + ") because infinity (" + infinityCost + ") was reached.");
-            listener.onRouteTableUpdate(nodeId);
-            routeTable.remove(destinationId);
+            String msg = "Node " + nodeId + " dropping route for dest (" + destinationId + ") because infinity (" + infinityCost + ") was reached.";
+
+            removeEntryForDest(entry.getDest(), msg);
+            //            listener.onRouteTableUpdate(nodeId);
+//            routeTable.remove(destinationId);
         }
     }
 

@@ -47,11 +47,11 @@ Scheduled events:
 
 ========================= Round 0 ==========================
 simulate network exchange start
-Node 1 logging new entry RouteEntry{ dest: 0, cost: 1, next:0}
-Node 2 logging new entry RouteEntry{ dest: 0, cost: 2, next:1}
-Node 2 logging new entry RouteEntry{ dest: 1, cost: 1, next:1}
-Node 0 logging new entry RouteEntry{ dest: 1, cost: 1, next:1}
-Node 1 logging new entry RouteEntry{ dest: 2, cost: 1, next:2}
+Node 1 logging RouteEntry{ dest: 0, cost: 1, next:0}
+Node 2 logging RouteEntry{ dest: 0, cost: 2, next:1}
+Node 2 logging RouteEntry{ dest: 1, cost: 1, next:1}
+Node 0 logging RouteEntry{ dest: 1, cost: 1, next:1}
+Node 1 logging RouteEntry{ dest: 2, cost: 1, next:2}
 simulate network exchange finish
 
 ------- !!! ------- There were a changes in node routing tables ------- !!! -------
@@ -87,7 +87,7 @@ RouteTable for node : 2
 
 ========================= Round 1 ==========================
 simulate network exchange start
-Node 0 logging new entry RouteEntry{ dest: 2, cost: 2, next:1}
+Node 0 logging RouteEntry{ dest: 2, cost: 2, next:1}
 simulate network exchange finish
 
 ------- !!! ------- There were a changes in node routing tables ------- !!! -------
@@ -263,14 +263,14 @@ RouteTable for node : 2
 
 ========================= Round 6 ==========================
 simulate network exchange start
-node 2 removing entry RouteEntry{ dest: 2, cost: 1, next:2}
-node 1 removing entry RouteEntry{ dest: 1, cost: 1, next:1}
-node 0 removing entry RouteEntry{ dest: 0, cost: 2, next:1}
+Node 1 remove neighbour 2
+Node 2 remove neighbour 1
+Node 2 will remove entry because it came from neightbor 1 : RouteEntry{ dest: 0, cost: 2, next:1}
 simulate network exchange finish
 
 ------- !!! ------- There were a changes in node routing tables ------- !!! -------
 Nodes with changed routing tables: 
-0 1 2 
+1 2 
 
 ########### ScheduledEvents after exchange 6 ###########
 ShowBestRouteEvent from 0 to 2
@@ -362,12 +362,11 @@ RouteTable for node : 2
 ========================= Round 9 ==========================
 simulate network exchange start
 Node 0 removing timeout entry: RouteEntry{ dest: 2, cost: 2, next:1}
-node 2 removing entry RouteEntry{ dest: 2, cost: 2, next:1}
 simulate network exchange finish
 
 ------- !!! ------- There were a changes in node routing tables ------- !!! -------
 Nodes with changed routing tables: 
-2 
+0 
 
 ########### ScheduledEvents after exchange 9 ###########
 ShowBestRouteEvent from 0 to 2
