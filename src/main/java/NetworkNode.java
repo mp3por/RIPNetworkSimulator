@@ -42,12 +42,13 @@ public class NetworkNode {
     /**
      * Constructor
      *
-     * @param nodeId   node id
-     * @param listener listener for routing table changes
+     * @param nodeId       node id
+     * @param listener     listener for routing table changes
+     * @param infinityCost
      */
-    public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener, boolean splitHorizon) {
+    public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener, boolean splitHorizon, Integer infinityCost) {
         this.nodeId = nodeId;
-        this.routeTable = new RouteTable(nodeId, listener);
+        this.routeTable = new RouteTable(nodeId, listener, infinityCost);
         this.status = STATUS.ACTIVE;
         this.neighbours = new HashMap<NetworkNode, NetworkLink>();
         this.splitHorizon = splitHorizon;
@@ -187,11 +188,14 @@ public class NetworkNode {
                     // get current cost to said node
                     Integer currCostToNode = routeTable.getCost(destinationId);
 
-                    if (newCost < currCostToNode) {
+                    if (newCost >= routeTable.getInfinityCost()) {
+                        // infinity reached => drop route
+                        routeTable.dropRoute(destinationId);
+                    } else if (newCost < currCostToNode) {
                         // log new cost and sender
                         routeTable.logDestCost(destinationId, newCost, sender);
                     } else if (newCost > currCostToNode) {
-                        // check for link cost changei
+                        // check for link cost change
                         Integer routeNextHopForDest = routeTable.getRouteNextHopForDest(destinationId);
                         if (routeNextHopForDest != null && routeNextHopForDest.equals(sender.getNodeId())) {
                             // save new cost even though it is bigger than the current cost because it was
@@ -231,7 +235,7 @@ public class NetworkNode {
     }
 
     public void printTable() {
-        System.out.println(routeTable.toString());
+        System.out.print(routeTable.toString());
     }
 
     @Override
@@ -239,7 +243,7 @@ public class NetworkNode {
         StringBuilder b = new StringBuilder("NetworkNode " + nodeId + ":\n");
         b.append("neighbours: [");
         for (NetworkNode networkNode : neighbours.keySet()) {
-            b.append(networkNode.getNodeId() + " : " + neighbours.get(networkNode) + ";");
+            b.append("node" + networkNode.getNodeId() + " : cost " + neighbours.get(networkNode) + ";");
         }
         b.append("]\n");
         b.append(routeTable.toString());

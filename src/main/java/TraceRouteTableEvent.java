@@ -12,7 +12,12 @@ public class TraceRouteTableEvent extends ScheduledEvent {
 
     @Override
     public void executeEvent(Integer currentExchange) {
-        System.out.println("TraceRouteEvent for node: " + node.getNodeId());
+        System.out.println(this.toString());
         node.printTable();
+    }
+
+    @Override
+    public String toString() {
+        return "TraceRouteTableEvent for node " + node.getNodeId();
     }
 }

@@ -6,18 +6,20 @@ public class RouteTable {
         void onRouteTableUpdate(Integer nodeId);
     }
 
-    public static final Integer INFINITY_COST = 64;
+    public static final Integer INFINITY_COST_DEFAULT = 16;
     public static final Integer FORGET_AFTER_DEFAULT = 4;
     public static final Integer FAILED_LINK_COST = -1;
+
+
     private final NetworkNodeRouteTableListener listener;
-
-
     private final HashMap<Integer, RouteTableEntry> routeTable;
     private final int nodeId;
+    private final int infinityCost;
 
-    public RouteTable(int nodeId, NetworkNodeRouteTableListener listener) {
+    public RouteTable(int nodeId, NetworkNodeRouteTableListener listener, int infinityCost) {
         this.nodeId = nodeId;
         this.listener = listener;
+        this.infinityCost = infinityCost;
         this.routeTable = new HashMap<Integer, RouteTableEntry>();
 
         RouteTableEntry routeToSelf = new RouteTableEntry(this.nodeId, 0, null);
@@ -30,7 +32,7 @@ public class RouteTable {
             routeTableEntry.resetForgetCounter();
             return routeTableEntry.getCost();
         }
-        return INFINITY_COST;
+        return infinityCost;
     }
 
     public HashMap<Integer, RouteTableEntry> getCosts() {
@@ -44,15 +46,8 @@ public class RouteTable {
         return costs;
     }
 
-    public void linkForDestFailed(Integer nodeId) {
-        RouteTableEntry entry = routeTable.get(nodeId);
-        if (entry != null) {
-            entry.cost = INFINITY_COST;
-            entry.nextNodeId = null;
-        }
-    }
-
     public void removeNeighbour(Integer nodeId) {
+        System.out.println("Node " + this.nodeId + " remove neighbour " + nodeId);
         removeEntryForDest(nodeId);
         HashSet<RouteTableEntry> toBeRemoved = new HashSet<RouteTableEntry>();
         for (RouteTableEntry entry : getEntriesWithoutSelf()) {
@@ -74,8 +69,12 @@ public class RouteTable {
     }
 
     private void removeEntries(HashSet<RouteTableEntry> toBeRemoved) {
-        for (RouteTableEntry entry : toBeRemoved) {
-            routeTable.remove(entry.getDest());
+        if (toBeRemoved.size() > 0) {
+            System.out.println("Node " + nodeId + " remove entries");
+            for (RouteTableEntry entry : toBeRemoved) {
+                System.out.println("Node " + nodeId + " removing timeout entry: " + entry);
+                routeTable.remove(entry.getDest());
+            }
         }
     }
 
@@ -91,18 +90,16 @@ public class RouteTable {
         for (RouteTableEntry entry : routeTable.values()) {
             entry.reduceForgetCounter();
             if (entry.shouldForget()) {
+                System.out.println("Node " + nodeId + " removing timeout entry: " + entry);
                 toBeRemoved.add(entry);
             }
         }
-        for (RouteTableEntry entry : toBeRemoved) {
-            System.out.println(nodeId + " removing entry: " + entry);
-            listener.onRouteTableUpdate(nodeId);
-            routeTable.remove(entry.getDest());
-        }
+        removeEntries(toBeRemoved);
     }
 
     public void logDestCost(Integer destinationId, Integer newCost, NetworkNode sender) {
         RouteTableEntry entry = new RouteTableEntry(destinationId, newCost, sender.getNodeId());
+        System.out.println("Node " + nodeId + " logging " + entry);
         routeTable.put(destinationId, entry);
         listener.onRouteTableUpdate(nodeId);
     }
@@ -121,6 +118,19 @@ public class RouteTable {
             return entry.getNextHop();
         }
         return null;
+    }
+
+    public int getInfinityCost() {
+        return infinityCost;
+    }
+
+    public void dropRoute(Integer destinationId) {
+        RouteTableEntry entry = routeTable.get(destinationId);
+        if (entry != null) {
+            System.out.println("Node " + nodeId + " dropping route for dest (" + destinationId + ") because infinity (" + infinityCost + ") was reached.");
+            listener.onRouteTableUpdate(nodeId);
+            routeTable.remove(destinationId);
+        }
     }
 
     @Override
@@ -192,7 +202,7 @@ public class RouteTable {
 
         @Override
         public String toString() {
-            return "RouteEntry{" + destNodeId + ", " + cost + ", " + nextNodeId + "}";
+            return "RouteEntry{ dest: " + destNodeId + ", cost: " + cost + ", next:" + nextNodeId + "}";
         }
 
         public RouteTableEntry copy() {

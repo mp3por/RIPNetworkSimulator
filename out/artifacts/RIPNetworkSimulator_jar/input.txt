@@ -1,4 +1,4 @@
--numOfNodes 4 -maxExchanges 10 -untilStability false -manual false -splitHorizon on
+-numOfNodes 4 -maxExchanges 10 -untilStability false -manual false -splitHorizon on -infinity 60
 0 1 3
 0 3 7
 1 2 6
@@ -13,3 +13,4 @@
 1 0 10
 2 0 10
 3 0 10
+4 0 10

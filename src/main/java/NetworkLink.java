@@ -15,6 +15,6 @@ public class NetworkLink {
 
     @Override
     public String toString() {
-        return "Link:" + cost ;
+        return String.valueOf(cost);
     }
 }

@@ -1,0 +1,531 @@
+WARNING! A Trace-Route-Table has been scheduled to happen after the simulation has finished. ExchangeStartIndex || ExchangeEndIndex > maxExchanges
+WARNING! A Trace-Route-Table has been scheduled to happen after the simulation has finished. ExchangeStartIndex || ExchangeEndIndex > maxExchanges
+WARNING! A Trace-Route-Table has been scheduled to happen after the simulation has finished. ExchangeStartIndex || ExchangeEndIndex > maxExchanges
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Starting simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+links costs:
+	0	1	-1
+	1	0	1
+	-1	1	0
+
+State of nodes:
+
+NetworkNode 0:
+neighbours: [node1 : cost 1;]
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+
+NetworkNode 1:
+neighbours: [node2 : cost 1;node0 : cost 1;]
+RouteTable for node : 1
+	dest cost next
+	   1    0 null
+
+NetworkNode 2:
+neighbours: [node1 : cost 1;]
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+
+Scheduled events:
+	At exchange 0 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 1 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 2 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 3 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 4 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 5 : [LinkCostChangeEvent: 1, newCost: -1; ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 6 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 7 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 8 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 9 : [ShowBestRouteEvent from 0 to 2; TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 10 : [TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 11 : [TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 12 : [TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 13 : [TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+	At exchange 14 : [TraceRouteTableEvent for node 0; TraceRouteTableEvent for node 1; TraceRouteTableEvent for node 2; ]
+
+========================= Round 0 ==========================
+simulate network exchange start
+Node 1 logging new entry RouteEntry{ dest: 0, cost: 1, next:0}
+Node 2 logging new entry RouteEntry{ dest: 0, cost: 2, next:1}
+Node 2 logging new entry RouteEntry{ dest: 1, cost: 1, next:1}
+Node 0 logging new entry RouteEntry{ dest: 1, cost: 1, next:1}
+Node 1 logging new entry RouteEntry{ dest: 2, cost: 1, next:2}
+simulate network exchange finish
+
+------- !!! ------- There were a changes in node routing tables ------- !!! -------
+Nodes with changed routing tables: 
+0 1 2 
+
+########### ScheduledEvents after exchange 0 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - >  next hop unknown yet 
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 0 ==========================
+
+
+========================= Round 1 ==========================
+simulate network exchange start
+Node 0 logging new entry RouteEntry{ dest: 2, cost: 2, next:1}
+simulate network exchange finish
+
+------- !!! ------- There were a changes in node routing tables ------- !!! -------
+Nodes with changed routing tables: 
+0 
+
+########### ScheduledEvents after exchange 1 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 -> 2
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 1 ==========================
+
+
+========================= Round 2 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 2 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 -> 2
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 2 ==========================
+
+
+========================= Round 3 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 3 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 -> 2
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 3 ==========================
+
+
+========================= Round 4 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 4 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 -> 2
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 4 ==========================
+
+
+========================= Round 5 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 5 ###########
+LinkCostChangeEvent
+	link between 1 and 2 from 1 to -1
+
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 -> 2
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+	   2    1    2
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   0    2    1
+	   1    1    1
+	   2    0 null
+
+========================= End round 5 ==========================
+
+
+========================= Round 6 ==========================
+simulate network exchange start
+node 2 removing entry RouteEntry{ dest: 2, cost: 1, next:2}
+node 1 removing entry RouteEntry{ dest: 1, cost: 1, next:1}
+node 0 removing entry RouteEntry{ dest: 0, cost: 2, next:1}
+simulate network exchange finish
+
+------- !!! ------- There were a changes in node routing tables ------- !!! -------
+Nodes with changed routing tables: 
+0 1 2 
+
+########### ScheduledEvents after exchange 6 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 ->  next hop unknown yet 
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 6 ==========================
+
+
+========================= Round 7 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 7 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 ->  next hop unknown yet 
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 7 ==========================
+
+
+========================= Round 8 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 8 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - > 1 ->  next hop unknown yet 
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+	   2    2    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 8 ==========================
+
+
+========================= Round 9 ==========================
+simulate network exchange start
+Node 0 removing timeout entry: RouteEntry{ dest: 2, cost: 2, next:1}
+node 2 removing entry RouteEntry{ dest: 2, cost: 2, next:1}
+simulate network exchange finish
+
+------- !!! ------- There were a changes in node routing tables ------- !!! -------
+Nodes with changed routing tables: 
+2 
+
+########### ScheduledEvents after exchange 9 ###########
+ShowBestRouteEvent from 0 to 2
+	0 - >  next hop unknown yet 
+
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 9 ==========================
+
+
+========================= Round 10 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 10 ###########
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 10 ==========================
+
+
+========================= Round 11 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 11 ###########
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 11 ==========================
+
+
+========================= Round 12 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 12 ###########
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 12 ==========================
+
+
+========================= Round 13 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 13 ###########
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 13 ==========================
+
+
+========================= Round 14 ==========================
+simulate network exchange start
+simulate network exchange finish
+
+------- !!! ------- Network stable for this round ------- !!! ------
+
+########### ScheduledEvents after exchange 14 ###########
+TraceRouteTableEvent for node 0
+RouteTable for node : 0
+	dest cost next
+	   0    0 null
+	   1    1    1
+
+TraceRouteTableEvent for node 1
+RouteTable for node : 1
+	dest cost next
+	   0    1    0
+	   1    0 null
+
+TraceRouteTableEvent for node 2
+RouteTable for node : 2
+	dest cost next
+	   2    0 null
+
+========================= End round 14 ==========================
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! End simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

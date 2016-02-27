@@ -12,24 +12,27 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     private final NetworkLink[][] links;
     private final int numOfNodes;
 
+    private final ArrayList<Integer> nodesWithChangedRoutingTables = new ArrayList<Integer>();
+
     private final HashMap<Integer, NetworkNode> nodesMap;
 
     private final Integer maxExchanges;
-    private final HashMap<Integer, HashSet<ScheduledEvent>> scheduledEvents;
+    private final HashMap<Integer, ArrayList<ScheduledEvent>> scheduledEvents;
     private final Boolean manual;
+    private final Integer infinityCost;
     private boolean splitHorizon;
     private boolean isStable = false;
     private final boolean untilStability;
 
     public void startSimulation() {
-        System.out.println("Starting simulation");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Starting simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         printCosts();
         printStateOfNodes();
         printScheduledEvents();
 
         Scanner userInput = new Scanner(System.in);
         String userInputLine;
-        for (int currIteration = 0; currIteration <= maxExchanges; currIteration++) {
+        for (int currIteration = 0; currIteration < maxExchanges; currIteration++) {
             boolean shouldContinue;
             if (!manual) {
                 shouldContinue = simulateRound(currIteration);
@@ -59,6 +62,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
                 break;
             }
         }
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! End simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     private void splitHorizonOff() {
@@ -78,45 +82,53 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     }
 
     public boolean simulateRound(int currExchange) {
-        System.out.println("--------------- Round " + currExchange + " -----------------");
+        System.out.println("========================= Round " + currExchange + " ==========================");
 
         simulateNetworkExchange();
         System.out.println();
         if (isStable) {
             if (untilStability) {
-                System.out.println("Stability reached after exchange: " + (currExchange - 1));
+                System.out.println("------- !!! ------- Stability reached after exchange: " + (currExchange - 1) + " ------- !!! ------\n");
                 return false;
             } else {
-                System.out.println("Network stable for this round");
-                System.out.println();
-//                    printStateOfNodes();
+                System.out.println("------- !!! ------- Network stable for this round ------- !!! ------\n");
             }
 
         } else {
-            System.out.println("There was a change(s). Nodes state after change(s):");
-            printStateOfNodes();
+            System.out.println("------- !!! ------- There were a changes in node routing tables ------- !!! -------");
+            printChangedNodes();
+//            printStateOfNodes();
         }
         simulateNetworkEvents(currExchange);
 
-        System.out.println("--------------- End round " + currExchange + " -----------------------------------");
-        System.out.println();
-        System.out.println();
+        System.out.println("========================= End round " + currExchange + " ==========================\n\n");
         return true;
     }
 
+    private void printChangedNodes() {
+        System.out.println("Nodes with changed routing tables: ");
+        Collections.sort(nodesWithChangedRoutingTables);
+        for (Integer nodeIdWithChangedRoutingTable : nodesWithChangedRoutingTables) {
+            System.out.print(nodeIdWithChangedRoutingTable + " ");
+        }
+        System.out.println();
+        System.out.println();
+    }
+
     private void simulateNetworkEvents(int currExchange) {
-        HashSet<ScheduledEvent> scheduledEvents = this.scheduledEvents.get(currExchange);
+        ArrayList<ScheduledEvent> scheduledEvents = this.scheduledEvents.get(currExchange);
         if (scheduledEvents != null) {
-            System.out.println("ScheduledEvents after exchange " + currExchange);
+            System.out.println("########### ScheduledEvents after exchange " + currExchange + " ###########");
             for (ScheduledEvent event : scheduledEvents) {
                 event.executeEvent(currExchange);
+                System.out.println();
             }
         }
     }
 
     private void simulateNetworkExchange() {
         System.out.println("simulate network exchange start");
-        isStable = true;
+        resetStabilityCheck();
         for (NetworkNode node : nodesMap.values()) {
             node.sendCostsToNeighbours();
         }
@@ -124,7 +136,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     }
 
     public void printCosts() {
-        StringBuilder b = new StringBuilder("links:\n");
+        StringBuilder b = new StringBuilder("links costs:\n");
         for (int i = 0; i < numOfNodes; i++) {
             for (int y = 0; y < numOfNodes; y++) {
                 b.append("\t" + links[i][y]);
@@ -138,9 +150,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         StringBuilder b = new StringBuilder("Scheduled events:\n");
         ArrayList<Integer> sortedKeys = new ArrayList<Integer>(scheduledEvents.keySet());
         for (Integer key : sortedKeys) {
-            HashSet<ScheduledEvent> scheduledEvents = this.scheduledEvents.get(key);
+            ArrayList<ScheduledEvent> scheduledEvents = this.scheduledEvents.get(key);
             if (scheduledEvents != null) {
-                b.append("\t" + key + " : [");
+                b.append("\tAt exchange " + key + " : [");
                 for (ScheduledEvent event : scheduledEvents) {
                     b.append(event.toString() + "; ");
                 }
@@ -161,15 +173,22 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     }
 
     public void printStateOfNodes() {
-        StringBuilder b = new StringBuilder("State of nodes:\n");
+        StringBuilder b = new StringBuilder("State of nodes:\n\n");
         for (NetworkNode node : nodesMap.values()) {
             b.append(node.toString() + "\n");
         }
         System.out.println(b.toString());
     }
 
+    private void resetStabilityCheck() {
+        nodesWithChangedRoutingTables.clear();
+        isStable = true;
+    }
 
     public void onRouteTableUpdate(Integer nodeId) {
+        if (!nodesWithChangedRoutingTables.contains(nodeId)) {
+            nodesWithChangedRoutingTables.add(nodeId);
+        }
         isStable = false;
     }
 
@@ -186,11 +205,17 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             throw new Exception("Must specify number of nodes in the network");
         }
         numOfNodes = Integer.valueOf(configValues.get(numOfNodesIndex + 1));
+        if (numOfNodes <= 0) {
+            throw new Exception("numOfNodes must be in the range [1, inf).");
+        }
 
         // look maxExchanges flag
         int maxExchangesIndex = configValues.indexOf("-maxExchanges");
         if (maxExchangesIndex != -1) {
             maxExchanges = Integer.valueOf(configValues.get(maxExchangesIndex + 1));
+            if (maxExchanges <= 0) {
+                throw new Exception("maxExchanges must be in the range [1, inf).");
+            }
         } else {
             maxExchanges = DEFAULT_NUM_OF_EXCHANGES;
         }
@@ -219,11 +244,22 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             splitHorizon = false;
         }
 
+        // look for infinity
+        int infinityCostIndex = configValues.indexOf("-infinity");
+        if (infinityCostIndex != -1) {
+            infinityCost = Integer.valueOf(configValues.get(infinityCostIndex + 1));
+            if (infinityCost <= 0) {
+                throw new Exception("infinityCost must be in the range [1, inf).");
+            }
+        } else {
+            infinityCost = RouteTable.INFINITY_COST_DEFAULT;
+        }
+
 
         // instantiate nodes
         nodesMap = new HashMap<Integer, NetworkNode>();
         for (int i = 0; i < numOfNodes; i++) {
-            NetworkNode node = new NetworkNode(i, this, splitHorizon);
+            NetworkNode node = new NetworkNode(i, this, splitHorizon, infinityCost);
             nodesMap.put(i, node);
         }
 
@@ -254,7 +290,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer linkCost = Integer.valueOf(inputLineValues[2]);
             if (fromNodeId >= numOfNodes || toNodeId >= numOfNodes) {
-                throw new Exception("node with ID greater than numOfNodes (" + numOfNodes + ") supplied in the links matrix");
+                throw new Exception("node with ID >= numOfNodes (" + numOfNodes + ") supplied in the links matrix");
             }
             NetworkLink networkLink = links[fromNodeId][toNodeId];
             networkLink.cost = linkCost;
@@ -266,7 +302,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         inputLinesIndex++; // move to next line
 
         // parse link changes
-        scheduledEvents = new HashMap<Integer, HashSet<ScheduledEvent>>();
+        scheduledEvents = new HashMap<Integer, ArrayList<ScheduledEvent>>();
         for (; inputLinesIndex < inputLines.length; inputLinesIndex++) {
             String inputLine = inputLines[inputLinesIndex];
             if (inputLine.contains("##")) {
@@ -278,7 +314,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             Integer changeAfterExchange = Integer.valueOf(inputLineValues[2]);
             Integer newCost = Integer.valueOf(inputLineValues[3]);
             if (fromNodeId >= numOfNodes || toNodeId >= numOfNodes) {
-                throw new Exception("node with ID greater than numOfNodes (" + numOfNodes + ") used in the Link-Cost-Change scheduling.");
+                throw new Exception("node with ID >= numOfNodes (" + numOfNodes + ") used in the Link-Cost-Change scheduling.");
             }
             if (changeAfterExchange >= maxExchanges) {
                 System.out.println("WARNING! A link cost change has been scheduled to happen after the simulation has finished. ChangeAfterExchange index > maxExchanges");
@@ -289,9 +325,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             }
             NetworkLink networkLink = links[fromNodeId][toNodeId];
             LinkCostChangeEvent event = new LinkCostChangeEvent(changeAfterExchange, networkLink, newCost, nodesMap.get(fromNodeId), nodesMap.get(toNodeId));
-            HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
+            ArrayList<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
             if (scheduledNetworkEvents == null) {
-                scheduledNetworkEvents = new HashSet<ScheduledEvent>();
+                scheduledNetworkEvents = new ArrayList<ScheduledEvent>();
                 scheduledEvents.put(changeAfterExchange, scheduledNetworkEvents);
             }
             scheduledNetworkEvents.add(event);
@@ -309,15 +345,15 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             Integer toNodeId = Integer.valueOf(inputLineValues[1]);
             Integer showAfterExchange = Integer.valueOf(inputLineValues[2]);
             if (fromNodeId >= numOfNodes || toNodeId >= numOfNodes) {
-                throw new Exception("node with ID greater than numOfNodes (" + numOfNodes + ") used in the Show-Best-Route scheduling.");
+                throw new Exception("node with ID >= numOfNodes (" + numOfNodes + ") used in the Show-Best-Route scheduling.");
             }
             if (showAfterExchange >= maxExchanges) {
                 System.out.println("WARNING! A Show-Best-Route has been scheduled to happen after the simulation has finished. ChangeAfterExchange index > maxExchanges");
             }
             ShowBestRouteEvent event = new ShowBestRouteEvent(showAfterExchange, nodesMap.get(fromNodeId), nodesMap.get(toNodeId), this);
-            HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(showAfterExchange);
+            ArrayList<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(showAfterExchange);
             if (scheduledNetworkEvents == null) {
-                scheduledNetworkEvents = new HashSet<ScheduledEvent>();
+                scheduledNetworkEvents = new ArrayList<ScheduledEvent>();
                 scheduledEvents.put(showAfterExchange, scheduledNetworkEvents);
             }
             scheduledNetworkEvents.add(event);
@@ -334,17 +370,17 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             Integer nodeId = Integer.valueOf(inputLineValues[0]);
             Integer exchangeStartIndex = Integer.valueOf(inputLineValues[1]);
             Integer exchangeEndIndex = Integer.valueOf(inputLineValues[2]);
-            if (nodeId>= numOfNodes) {
-                throw new Exception("node with ID greater than numOfNodes (" + numOfNodes + ") used in the Trace-Route-Table scheduling.");
+            if (nodeId >= numOfNodes) {
+                throw new Exception("node with ID >= numOfNodes (" + numOfNodes + ") used in the Trace-Route-Table scheduling.");
             }
             if (exchangeStartIndex >= maxExchanges || exchangeEndIndex >= maxExchanges) {
                 System.out.println("WARNING! A Trace-Route-Table has been scheduled to happen after the simulation has finished. ExchangeStartIndex || ExchangeEndIndex > maxExchanges");
             }
             TraceRouteTableEvent event = new TraceRouteTableEvent(nodesMap.get(nodeId), exchangeStartIndex, exchangeEndIndex);
             for (int i = exchangeStartIndex; i < exchangeEndIndex; i++) {
-                HashSet<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(i);
+                ArrayList<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(i);
                 if (scheduledNetworkEvents == null) {
-                    scheduledNetworkEvents = new HashSet<ScheduledEvent>();
+                    scheduledNetworkEvents = new ArrayList<ScheduledEvent>();
                     scheduledEvents.put(i, scheduledNetworkEvents);
                 }
                 scheduledNetworkEvents.add(event);
@@ -357,17 +393,23 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
 
 
     public ArrayList<NetworkNode> findBestRoute(NetworkNode fromNode, NetworkNode toNode, ArrayList<NetworkNode> currPath) {
-        if (fromNode.getNodeId().equals(toNode.getNodeId())) {
+        if (fromNode == null || toNode == null || fromNode.getNodeId().equals(toNode.getNodeId())) {
             return null;
         } else if (fromNode.isNodeNeighbour(toNode)) {
-//            currPath.add(toNode);
+            currPath.add(toNode);
             return currPath;
         } else {
             Integer nextNodeInPathId = fromNode.getNextHopToDest(toNode);
             if (nextNodeInPathId != null) {
                 NetworkNode nextNodeInPath = nodesMap.get(nextNodeInPathId);
-                currPath.add(nextNodeInPath);
-                return findBestRoute(nextNodeInPath, toNode, currPath);
+                if (currPath.contains(nextNodeInPath)) {
+                    System.out.println("There is a cycle in the routes meaning the end node (" + toNode.getNodeId() + ") has become unreachable!");
+                    return currPath;
+                } else {
+                    currPath.add(nextNodeInPath);
+                    findBestRoute(nextNodeInPath, toNode, currPath);
+                    return currPath;
+                }
             } else {
                 currPath.add(null);
                 return currPath;

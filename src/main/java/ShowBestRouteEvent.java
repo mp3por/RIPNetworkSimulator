@@ -25,15 +25,25 @@ public class ShowBestRouteEvent extends ScheduledEvent {
         System.out.println(this.toString());
         currPath = simulator.findBestRoute(fromNode, toNode, currPath);
         StringBuilder b = new StringBuilder("\t" + fromNode.getNodeId() + " - > ");
-        for (NetworkNode networkNode : currPath) {
-            b.append(networkNode.getNodeId() + " -> ");
+        for (int i = 0; i < currPath.size(); i++) {
+            NetworkNode networkNode = currPath.get(i);
+            if (networkNode != null) {
+                b.append(networkNode.getNodeId());
+                if (i != currPath.size() - 1) {
+                    b.append(" -> ");
+                }
+
+            } else {
+                b.append(" next hop unknown yet ");
+                break;
+            }
         }
-        b.append(toNode.getNodeId());
+//        b.append(toNode.getNodeId());
         System.out.println(b.toString());
     }
 
     @Override
     public String toString() {
-        return "\tShowBestRouteEvent from " + fromNode.getNodeId() + " to " + toNode.getNodeId();
+        return "ShowBestRouteEvent from " + fromNode.getNodeId() + " to " + toNode.getNodeId();
     }
 }
