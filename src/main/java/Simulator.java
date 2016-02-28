@@ -163,15 +163,6 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println(b.toString());
     }
 
-    public void printNodes() {
-        StringBuilder b = new StringBuilder("nodes:\n");
-
-        for (NetworkNode networkNode : nodesMap.values()) {
-            b.append(networkNode + "\n");
-        }
-        System.out.println(b.toString());
-    }
-
     public void printStateOfNodes() {
         StringBuilder b = new StringBuilder("State of nodes:\n\n");
         for (NetworkNode node : nodesMap.values()) {
@@ -269,10 +260,10 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
             for (int y = i; y < numOfNodes; y++) {
                 if (i == y) {
                     // distance to self = 0
-                    links[i][y] = new NetworkLink(0);
+                    links[i][y] = new NetworkLink(0, nodesMap.get(i), nodesMap.get(y));
                 } else {
                     // distance to others set to FAILED_LINK_COST
-                    NetworkLink networkLink = new NetworkLink(RouteTable.FAILED_LINK_COST);
+                    NetworkLink networkLink = new NetworkLink(RouteTable.FAILED_LINK_COST, nodesMap.get(i), nodesMap.get(y));
                     links[i][y] = networkLink;
                     links[y][i] = networkLink;
                 }
@@ -324,7 +315,7 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
                 newCost = RouteTable.FAILED_LINK_COST;
             }
             NetworkLink networkLink = links[fromNodeId][toNodeId];
-            LinkCostChangeEvent event = new LinkCostChangeEvent(changeAfterExchange, networkLink, newCost, nodesMap.get(fromNodeId), nodesMap.get(toNodeId));
+            LinkCostChangeEvent event = new LinkCostChangeEvent(changeAfterExchange, networkLink, newCost);
             ArrayList<ScheduledEvent> scheduledNetworkEvents = scheduledEvents.get(changeAfterExchange);
             if (scheduledNetworkEvents == null) {
                 scheduledNetworkEvents = new ArrayList<ScheduledEvent>();
@@ -395,9 +386,6 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     public ArrayList<NetworkNode> findBestRoute(NetworkNode fromNode, NetworkNode toNode, ArrayList<NetworkNode> currPath) {
         if (fromNode == null || toNode == null || fromNode.getNodeId().equals(toNode.getNodeId())) {
             return null;
-        } else if (fromNode.isNodeNeighbour(toNode)) {
-            currPath.add(toNode);
-            return currPath;
         } else {
             Integer nextNodeInPathId = fromNode.getNextHopToDest(toNode);
             if (nextNodeInPathId != null) {

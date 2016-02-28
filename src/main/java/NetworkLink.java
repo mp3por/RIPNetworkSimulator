@@ -1,20 +1,28 @@
 /**
- * Created by velin.
+ * A class which will represent a network link between.
  */
 public class NetworkLink {
     Integer cost;
-//    NetworkNode nodeId1;
-//    NetworkNode nodeId2;
+    NetworkNode node1;
+    NetworkNode node2;
 
 
-    public NetworkLink(Integer cost) {
+    public NetworkLink(Integer cost, NetworkNode node1, NetworkNode node2) {
         this.cost = cost;
-//        this.nodeId1 = nodeId1;
-//        this.nodeId2 = nodeId2;
+        this.node1 = node1;
+        this.node2 = node2;
     }
 
     @Override
     public String toString() {
         return String.valueOf(cost);
+    }
+
+    public NetworkNode getNode1() {
+        return node1;
+    }
+
+    public NetworkNode getNode2() {
+        return node2;
     }
 }
