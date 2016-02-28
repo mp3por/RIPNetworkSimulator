@@ -3,7 +3,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 /**
- * Created by velin.
+ * Class representing a network node.
  */
 public class NetworkNode {
 
@@ -11,13 +11,6 @@ public class NetworkNode {
      * split horizon flag
      */
     private boolean splitHorizon;
-
-    /**
-     * Node status
-     */
-    enum STATUS {
-        ACTIVE, FAILED
-    }
 
     /**
      * Node Id
@@ -35,32 +28,18 @@ public class NetworkNode {
     private HashMap<NetworkNode, NetworkLink> neighbours;
 
     /**
-     * Node current status
-     */
-    private STATUS status;
-
-    /**
      * Constructor
      *
-     * @param nodeId       node id
+     * @param nodeId       integer node id
      * @param listener     listener for routing table changes
-     * @param infinityCost
+     * @param splitHorizon boolean if split-horizon is engaged or not
+     * @param infinityCost cost of infinity
      */
     public NetworkNode(int nodeId, RouteTable.NetworkNodeRouteTableListener listener, boolean splitHorizon, Integer infinityCost) {
         this.nodeId = nodeId;
         this.routeTable = new RouteTable(nodeId, listener, infinityCost);
-        this.status = STATUS.ACTIVE;
         this.neighbours = new HashMap<NetworkNode, NetworkLink>();
         this.splitHorizon = splitHorizon;
-    }
-
-    /**
-     * Setter for neighbours
-     *
-     * @param neighbours the neighbours
-     */
-    public void setNeighbours(HashMap<NetworkNode, NetworkLink> neighbours) {
-        this.neighbours = neighbours;
     }
 
     /**
@@ -99,15 +78,6 @@ public class NetworkNode {
     }
 
     /**
-     * Is node active check
-     *
-     * @return true if node is active, false otherwise
-     */
-    public boolean isActive() {
-        return status.equals(STATUS.ACTIVE);
-    }
-
-    /**
      * Method to be called by the simulator to tell the node to send routing table to neighbours
      */
     public void sendCostsToNeighbours() {
@@ -123,6 +93,9 @@ public class NetworkNode {
         }
     }
 
+    /**
+     * Checks all the links this node is part of in order to detect link failures
+     */
     private void checkLinksAndRemoveDisconnectedNeighbours() {
         HashSet<NetworkNode> noLongerNeighbours = new HashSet<NetworkNode>();
         for (NetworkNode neighbourNode : neighbours.keySet()) {
@@ -134,12 +107,22 @@ public class NetworkNode {
         removeNodesFromNeighbours(noLongerNeighbours);
     }
 
+    /**
+     * Helper method for removing nodes from neighbours list
+     *
+     * @param nodes the nodes to be removed
+     */
     private void removeNodesFromNeighbours(HashSet<NetworkNode> nodes) {
         for (NetworkNode node : nodes) {
             removeNodeFromNeighbours(node);
         }
     }
 
+    /**
+     * Helper method for removing node from neighbour list
+     *
+     * @param node the node to be removed
+     */
     private void removeNodeFromNeighbours(NetworkNode node) {
         // remove from neighbours
         neighbours.remove(node);
@@ -154,15 +137,8 @@ public class NetworkNode {
      * @param sender the node that initiated the
      */
     private synchronized void handleCostsMsg(NetworkNode sender) {
-        // notify route table that sender has contacted
-//        routeTable.nodeHasContacted(sender);
-//        System.out.println(sender.nodeId + " sent routes to " + nodeId);
-//        printNeighbours();
-
         // get link cost
-
         Integer linkCost = neighbours.get(sender).cost;
-//        System.out.println("\tget linkCost between " + nodeId + " and " + sender.getNodeId() + " = " + linkCost);
 
         if (linkCost.equals(RouteTable.FAILED_LINK_COST)) {// link is down
             // remove from neighbours
@@ -172,11 +148,10 @@ public class NetworkNode {
             HashMap<Integer, RouteTable.RouteTableEntry> sendersRoutes = sender.getRoutesForAdvertising(this);
 
             // iterate over msg and check new routes
-            Iterator<Integer> nodesIterator = sendersRoutes.keySet().iterator();
-            while (nodesIterator.hasNext()) {
+            for (Integer destinationId : sendersRoutes.keySet()) {
                 // get node id
-                Integer destinationId = nodesIterator.next();
                 if (!destinationId.equals(this.nodeId)) {
+                    // extract route table entry from senders routes table for node with id = destinationId
                     RouteTable.RouteTableEntry sendersRouteForDest = sendersRoutes.get(destinationId);
 
                     // get cost advertised by the sender
@@ -196,11 +171,10 @@ public class NetworkNode {
                         routeTable.logDestCost(destinationId, newCost, sender);
                     } else if (newCost > currCostToNode) {
                         // check for link cost change
-                        Integer routeNextHopForDest = routeTable.getRouteNextHopForDest(destinationId);
+                        Integer routeNextHopForDest = routeTable.getNextHopTowardsDest(destinationId);
                         if (routeNextHopForDest != null && routeNextHopForDest.equals(sender.getNodeId())) {
                             // save new cost even though it is bigger than the current cost because it was
-                            // advertised by the same node which advertised the current cost meaning that
-                            // the link cost has changed for the worse
+                            // advertised by the same node which is advertising the current cost
                             routeTable.logDestCost(destinationId, newCost, sender);
                         }
                     }
@@ -209,31 +183,38 @@ public class NetworkNode {
         }
     }
 
-    private void printNeighbours() {
-        StringBuilder b = new StringBuilder("Neighbours for node (" + nodeId + "): [");
-        for (NetworkNode networkNode : neighbours.keySet()) {
-            b.append(networkNode.getNodeId() + " - " + neighbours.get(networkNode) + ", ");
-        }
-        b.append("]");
-        System.out.println("neighbours for node " + nodeId + " : " + b.toString());
-    }
-
+    /**
+     * Helper method for adding nodes as neighbours to this node
+     *
+     * @param connectedNode the neighbour node
+     * @param networkLink   the link they share
+     */
     public void addNeighbour(NetworkNode connectedNode, NetworkLink networkLink) {
         neighbours.put(connectedNode, networkLink);
     }
 
-    public boolean isNodeNeighbour(NetworkNode toNode) {
-        return neighbours.keySet().contains(toNode);
-    }
-
+    /**
+     * Helper method for find out the next hop towards a destination
+     *
+     * @param toNode destination node
+     * @return {@link RouteTable#getNextHopTowardsDest(NetworkNode)}
+     */
     public Integer getNextHopToDest(NetworkNode toNode) {
         return routeTable.getNextHopTowardsDest(toNode);
     }
 
+    /**
+     * Split-horizon flag setter
+     *
+     * @param splitHorizon split-horizon value
+     */
     public void setSplitHorizon(boolean splitHorizon) {
         this.splitHorizon = splitHorizon;
     }
 
+    /**
+     * Helper method for printing this node's routing table
+     */
     public void printTable() {
         System.out.print(routeTable.toString());
     }

@@ -4,7 +4,10 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Created by velin.
+ * The simulator.
+ * <p>
+ * It registers when a route table of a node has changed.
+ * It also finds the best route between two nodes.
  */
 public class Simulator implements RouteTable.NetworkNodeRouteTableListener, ShowBestRouteEvent.ShowBestRouteCapable {
     public static final Integer DEFAULT_NUM_OF_EXCHANGES = 100;
@@ -25,11 +28,15 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     private final boolean untilStability;
 
     public void startSimulation() {
+        // for clarity
         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Starting simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+        // print simulator initial state
         printCosts();
         printStateOfNodes();
         printScheduledEvents();
 
+        // automatic vs manual
         Scanner userInput = new Scanner(System.in);
         String userInputLine;
         for (int currIteration = 0; currIteration < maxExchanges; currIteration++) {
@@ -65,46 +72,45 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! End simulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
-    private void splitHorizonOff() {
-        System.out.println("split horizon on");
-        splitHorizon = false;
-        for (NetworkNode node : nodesMap.values()) {
-            node.setSplitHorizon(splitHorizon);
-        }
-    }
-
-    private void splitHorizonOn() {
-        System.out.println("split horizon off");
-        splitHorizon = true;
-        for (NetworkNode node : nodesMap.values()) {
-            node.setSplitHorizon(splitHorizon);
-        }
-    }
-
+    /**
+     * Simulates one exchange
+     *
+     * @param currExchange the index of the exchange to be simulated
+     * @return true if simulation should continue, false if not
+     */
     public boolean simulateRound(int currExchange) {
         System.out.println("========================= Round " + currExchange + " ==========================");
 
+        // simulate network exchange
         simulateNetworkExchange();
         System.out.println();
+
         if (isStable) {
+            // network stable. Decide if simulations should continue.
             if (untilStability) {
                 System.out.println("------- !!! ------- Stability reached after exchange: " + (currExchange - 1) + " ------- !!! ------\n");
                 return false;
             } else {
                 System.out.println("------- !!! ------- Network stable for this round ------- !!! ------\n");
             }
-
         } else {
+            // network was not stable.
             System.out.println("------- !!! ------- There were a changes in node routing tables ------- !!! -------");
+
+            // print ids of nodes with changes
             printChangedNodes();
-//            printStateOfNodes();
         }
+
+        // simulate network events
         simulateNetworkEvents(currExchange);
 
         System.out.println("========================= End round " + currExchange + " ==========================\n\n");
         return true;
     }
 
+    /**
+     * Prints ids of nodes which route's tables have changed during the previous exchange
+     */
     private void printChangedNodes() {
         System.out.println("Nodes with changed routing tables: ");
         Collections.sort(nodesWithChangedRoutingTables);
@@ -115,9 +121,15 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println();
     }
 
+    /**
+     * Simulates network events
+     *
+     * @param currExchange the current exchange index
+     */
     private void simulateNetworkEvents(int currExchange) {
         ArrayList<ScheduledEvent> scheduledEvents = this.scheduledEvents.get(currExchange);
         if (scheduledEvents != null) {
+            // events exist so execute them
             System.out.println("########### ScheduledEvents after exchange " + currExchange + " ###########");
             for (ScheduledEvent event : scheduledEvents) {
                 event.executeEvent(currExchange);
@@ -126,15 +138,26 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         }
     }
 
+    /**
+     * Simulates a network exchange
+     */
     private void simulateNetworkExchange() {
         System.out.println("simulate network exchange start");
+
+        // reset stability check
         resetStabilityCheck();
+
+        // tell every node to contact its neighbour
         for (NetworkNode node : nodesMap.values()) {
             node.sendCostsToNeighbours();
         }
+
         System.out.println("simulate network exchange finish");
     }
 
+    /**
+     * Print link costs matrix
+     */
     public void printCosts() {
         StringBuilder b = new StringBuilder("links costs:\n");
         for (int i = 0; i < numOfNodes; i++) {
@@ -146,6 +169,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println(b.toString());
     }
 
+    /**
+     * Prints scheduled events.
+     */
     public void printScheduledEvents() {
         StringBuilder b = new StringBuilder("Scheduled events:\n");
         ArrayList<Integer> sortedKeys = new ArrayList<Integer>(scheduledEvents.keySet());
@@ -163,6 +189,9 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println(b.toString());
     }
 
+    /**
+     * Prints the current state of nodes in the network
+     */
     public void printStateOfNodes() {
         StringBuilder b = new StringBuilder("State of nodes:\n\n");
         for (NetworkNode node : nodesMap.values()) {
@@ -171,11 +200,19 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         System.out.println(b.toString());
     }
 
+    /**
+     * Resets the stability check.
+     */
     private void resetStabilityCheck() {
         nodesWithChangedRoutingTables.clear();
         isStable = true;
     }
 
+    /**
+     * Handles change in a node route table
+     *
+     * @param nodeId the id of the node whose route table registered an update
+     */
     public void onRouteTableUpdate(Integer nodeId) {
         if (!nodesWithChangedRoutingTables.contains(nodeId)) {
             nodesWithChangedRoutingTables.add(nodeId);
@@ -183,6 +220,34 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
         isStable = false;
     }
 
+    /**
+     * Helper method for turning split-horizon off.
+     */
+    private void splitHorizonOff() {
+        System.out.println("split horizon on");
+        splitHorizon = false;
+        for (NetworkNode node : nodesMap.values()) {
+            node.setSplitHorizon(splitHorizon);
+        }
+    }
+
+    /**
+     * Helper method for turning split-horizon on.
+     */
+    private void splitHorizonOn() {
+        System.out.println("split horizon off");
+        splitHorizon = true;
+        for (NetworkNode node : nodesMap.values()) {
+            node.setSplitHorizon(splitHorizon);
+        }
+    }
+
+    /**
+     * Constructor
+     *
+     * @param fileName the config file name
+     * @throws Exception
+     */
     public Simulator(String fileName) throws Exception {
         // read file and parse into lines
         String[] inputLines = FileUtils.readFileToString(new File(fileName)).split("\n");
@@ -383,6 +448,14 @@ public class Simulator implements RouteTable.NetworkNodeRouteTableListener, Show
     }
 
 
+    /**
+     * Finds best route between two nodes.
+     *
+     * @param fromNode from node
+     * @param toNode   to node
+     * @param currPath current path
+     * @return the path between the two nodes
+     */
     public ArrayList<NetworkNode> findBestRoute(NetworkNode fromNode, NetworkNode toNode, ArrayList<NetworkNode> currPath) {
         if (fromNode == null || toNode == null || fromNode.getNodeId().equals(toNode.getNodeId())) {
             return null;

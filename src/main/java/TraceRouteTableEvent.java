@@ -1,5 +1,5 @@
 /**
- * Created by velin.
+ * Event which will print the route table of a node.
  */
 public class TraceRouteTableEvent extends ScheduledEvent {
 
@@ -12,7 +12,10 @@ public class TraceRouteTableEvent extends ScheduledEvent {
 
     @Override
     public void executeEvent(Integer currentExchange) {
+        // for clarity
         System.out.println(this.toString());
+
+        // print table
         node.printTable();
     }
 
